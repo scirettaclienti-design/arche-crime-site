@@ -1,0 +1,93 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = 'archè — dal mito alla mente. Una piattaforma editoriale sulla criminologia letta attraverso il mito greco, di Gabriella Marano.',
+  ogImage,
+  noindex = false,
+} = Astro.props;
+
+const fullTitle = title ? `${title} · archè` : 'archè · dal mito alla mente';
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).toString() : undefined;
+
+const navLinks = [
+  { href: '/metodo', label: 'Metodo' },
+  { href: '/episodi', label: 'Episodi' },
+  { href: '/dal-vivo', label: 'Dal vivo' },
+  { href: '/formazione', label: 'Formazione' },
+  { href: '/chi-e', label: 'Chi è' },
+];
+---
+
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="canonical" href={canonical} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex,nofollow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="archè" />
+    <meta property="og:locale" content="it_IT" />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body class="bg-ink text-bone font-serif min-h-screen antialiased">
+    <header class="relative z-20 border-b border-[var(--line-soft)]">
+      <nav
+        class="mx-auto flex max-w-wide flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6"
+      >
+        <a href="/" class="font-display text-lg tracking-tight text-bone">
+          archè<span class="text-gold-bright"> ◆</span>
+        </a>
+        <ul
+          class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs uppercase tracking-eyebrow text-bone-dim"
+        >
+          {navLinks.map((link) => (
+            <li>
+              <a href={link.href} class="transition-colors hover:text-bone">
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
+
+    <main class="relative z-10">
+      <slot />
+    </main>
+
+    <footer
+      class="relative z-10 mt-24 border-t border-[var(--line-soft)] py-10 text-center text-xs uppercase tracking-eyebrow text-bone-faint"
+    >
+      archè — dal mito alla mente
+    </footer>
+  </body>
+</html>

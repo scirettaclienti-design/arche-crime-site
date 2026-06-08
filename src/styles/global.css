@@ -1,0 +1,15 @@
+/* archè · inchiostro
+   Tokens + font-face vengono dal design system pubblicato.
+   Tutti i valori (--color-ink, --color-bone, --color-gold-*, --font-display,
+   --font-serif, scale tipografiche e spazi) sono definiti lì:
+   non duplicarli qui — modificare il design system e ribumpare la versione. */
+@import "@scirettaclienti-design/arche-design-system/tokens";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { min-height: 100dvh; }
+}
