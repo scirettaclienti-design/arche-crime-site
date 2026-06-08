@@ -84,6 +84,16 @@ function settleAll(): void {
   document.querySelectorAll<HTMLElement>('[data-meander] .meander-knot').forEach((el) => {
     el.style.opacity = '1';
   });
+  // Gesti per pagina — final state a reduced-motion: tutto al posto giusto.
+  document.querySelectorAll<HTMLElement>(
+    '[data-incise] p, [data-incise] h2, [data-incise] h3, [data-vitrine] li, [data-vitrine] [data-vitrine-item], [data-stage] li, [data-stage] [data-stage-item], [data-page-turn] li, [data-page-turn] [data-page-turn-item], [data-portrait]',
+  ).forEach((el) => {
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+    el.style.clipPath = 'none';
+    setWebkitClipPath(el, 'none');
+    el.style.filter = 'none';
+  });
   clearPendingClass();
 }
 
@@ -264,6 +274,98 @@ async function initMotion(state: MotionState): Promise<void> {
         });
       }
     }
+  });
+
+  // ── INCISIONE (/metodo): paragrafi appaiono come scolpiti riga per riga.
+  // Clip-path inset L→R + leggero blur che si dissolve. Stagger 0.08s.
+  document.querySelectorAll<HTMLElement>('[data-incise]').forEach((group) => {
+    const lines = group.querySelectorAll<HTMLElement>('p, h2, h3');
+    if (!lines.length) return;
+    gsap.set(lines, {
+      clipPath: 'inset(0 100% 0 0)',
+      webkitClipPath: 'inset(0 100% 0 0)',
+      filter: 'blur(3px)',
+    });
+    gsap.to(lines, {
+      clipPath: 'inset(0 0% 0 0)',
+      webkitClipPath: 'inset(0 0% 0 0)',
+      filter: 'blur(0px)',
+      duration: 1.1,
+      stagger: 0.12,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: group, start: 'top 80%', once: true },
+    });
+  });
+
+  // ── VETRINA (/episodi): le 5 card della MythMatrix si "accendono" in sequenza,
+  // come pezzi di museo dietro vetro illuminati uno alla volta.
+  document.querySelectorAll<HTMLElement>('[data-vitrine]').forEach((wrapper) => {
+    const items = wrapper.querySelectorAll<HTMLElement>('[data-vitrine-item], li');
+    if (!items.length) return;
+    gsap.set(items, { opacity: 0.18, filter: 'brightness(0.55)' });
+    gsap.to(items, {
+      opacity: 1,
+      filter: 'brightness(1)',
+      duration: 0.7,
+      stagger: 0.25,
+      ease: 'power2.out',
+      scrollTrigger: { trigger: wrapper, start: 'top 75%', once: true },
+    });
+  });
+
+  // ── PALCO (/dal-vivo): i blocchi delle 3 colonne entrano da quinte laterali alternate.
+  // Card pari da sinistra, dispari da destra. Lento, teatrale.
+  document.querySelectorAll<HTMLElement>('[data-stage]').forEach((wrapper) => {
+    const items = wrapper.querySelectorAll<HTMLElement>('li, [data-stage-item]');
+    items.forEach((item, i) => {
+      const fromLeft = i % 2 === 0;
+      gsap.fromTo(
+        item,
+        { opacity: 0, x: fromLeft ? -48 : 48 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 1.1,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: item, start: 'top 88%', once: true },
+        },
+      );
+    });
+  });
+
+  // ── PAGINA (/formazione): le card si "girano" come pagine di libro (rotateY).
+  // Origin sinistro, perspective sul parent.
+  document.querySelectorAll<HTMLElement>('[data-page-turn]').forEach((wrapper) => {
+    wrapper.style.perspective = '1400px';
+    const items = wrapper.querySelectorAll<HTMLElement>('li, [data-page-turn-item]');
+    gsap.set(items, {
+      opacity: 0,
+      rotateY: -22,
+      transformOrigin: 'left center',
+    });
+    gsap.to(items, {
+      opacity: 1,
+      rotateY: 0,
+      duration: 1.2,
+      stagger: 0.22,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: wrapper, start: 'top 80%', once: true },
+    });
+  });
+
+  // ── RITRATTO (/chi-e): gesto minimale, fade lentissimo. Per rispetto della
+  // persona, niente entrate plateali su una pagina che racconta chi è qualcuno.
+  document.querySelectorAll<HTMLElement>('[data-portrait]').forEach((el) => {
+    gsap.fromTo(
+      el,
+      { opacity: 0 },
+      {
+        opacity: 1,
+        duration: 1.8,
+        ease: 'power1.out',
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+      },
+    );
   });
 
   // ── VARIABLE BODONI AXIS: i titoli display con [data-vary] passano da
