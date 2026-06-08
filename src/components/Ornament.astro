@@ -1,0 +1,23 @@
+---
+interface Props {
+  size?: 'sm' | 'md' | 'lg';
+  class?: string;
+}
+
+const { size = 'md', class: className = '' } = Astro.props;
+
+const dims = {
+  sm: { gap: 'gap-3', rule: 'w-10 sm:w-14', diamond: 'text-base' },
+  md: { gap: 'gap-4', rule: 'w-16 sm:w-24', diamond: 'text-lg' },
+  lg: { gap: 'gap-6', rule: 'w-24 sm:w-36', diamond: 'text-2xl' },
+}[size];
+---
+
+<div
+  class={`flex items-center justify-center ${dims.gap} ${className}`}
+  aria-hidden="true"
+>
+  <span class={`h-px ${dims.rule} bg-[var(--line)]`}></span>
+  <span class={`${dims.diamond} text-gold-bright`}>◆</span>
+  <span class={`h-px ${dims.rule} bg-[var(--line)]`}></span>
+</div>

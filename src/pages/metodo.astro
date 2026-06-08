@@ -1,0 +1,186 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Ornament from '../components/Ornament.astro';
+
+export const prerender = true;
+
+const cinqueMai = [
+  {
+    n: '01',
+    titolo: 'Mai indagini ancora aperte.',
+    nota:
+      'archè non parla di processi in corso. Il rispetto del segreto investigativo non è cortesia: è la condizione che ci permette di pensare invece di reagire.',
+  },
+  {
+    n: '02',
+    titolo: 'Mai il nome di una vittima recente come gancio.',
+    nota:
+      'Il dolore fresco non è materia editoriale. archè racconta fenomeni, non casi singoli — e quando un caso entra in scena, è perché il tempo ne ha già fatto un archetipo.',
+  },
+  {
+    n: '03',
+    titolo: 'Mai il "caso della settimana".',
+    nota:
+      'Il calendario della cronaca detta i ritmi della reazione. archè ha un altro orologio: quello del teatro, della ricerca, dell\'archivio.',
+  },
+  {
+    n: '04',
+    titolo: 'Mai diagnosi su persone reali.',
+    nota:
+      'Una categoria criminologica spiega un fenomeno, non firma una sentenza. La parola "narcisista" applicata a un imputato che tu non hai mai incontrato è cattiva clinica e peggior giornalismo.',
+  },
+  {
+    n: '05',
+    titolo: 'Mai sensazionalismo.',
+    nota:
+      'Niente musica drammatica sul colpo di scena, niente fotografia da scena del crimine, niente voce in falsetto. La gravità del tema chiede sobrietà — non spettacolo.',
+  },
+];
+---
+
+<BaseLayout
+  title="Il metodo"
+  description="Il metodo archè: leggere la criminologia attraverso il mito greco. ἀρχή come origine, il fossato tra archeologia e criminologia, i cinque 'mai' che ci tengono lontani dalla cronaca nera."
+>
+  <PageHeader
+    eyebrow="Il metodo"
+    title="Dal mito alla mente"
+    intro="archè non è una rubrica di cronaca nera con il vestito buono. È un metodo: ascoltare quello che il mito ha capito molto prima di noi sul gesto criminale, e tornare al presente con strumenti migliori."
+  />
+
+  <section class="mx-auto max-w-text px-6 py-16 sm:py-20">
+    <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+      I · L'origine
+    </p>
+    <h2 class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
+      ἀρχή — l'origine, il principio
+    </h2>
+    <div class="mt-8 space-y-6 font-serif text-lg leading-loose text-bone-dim">
+      <p>
+        In greco antico <em class="font-display text-bone">archè</em> è la parola
+        con cui i filosofi cercavano il fondamento delle cose: l'acqua di Talete,
+        l'aria di Anassimene, il logos di Eraclito. Non un inizio cronologico —
+        un principio strutturale, ciò da cui tutto il resto discende.
+      </p>
+      <p>
+        È questo che ci interessa quando guardiamo un crimine. Non l'ultima
+        mossa, non il colpo di scena: la matrice che lo rendeva pensabile, la
+        forma che la nostra cultura, da Euripide in poi, aveva già scritto.
+      </p>
+    </div>
+  </section>
+
+  <Ornament class="my-8" />
+
+  <section class="mx-auto max-w-text px-6 py-16 sm:py-20">
+    <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+      II · Il fossato
+    </p>
+    <h2 class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
+      Archeologia <span class="font-display italic text-bone-dim">e</span> criminologia
+    </h2>
+    <div class="mt-8 space-y-6 font-serif text-lg leading-loose text-bone-dim">
+      <p>
+        archè nasce da una doppia formazione che, da sola, è raro incontrare in
+        Italia: l'archeologia che insegna a leggere strati, frammenti e
+        contesti — e la criminologia che insegna a leggere persone, scene e
+        dinamiche.
+      </p>
+      <p>
+        Il fossato fra le due discipline non è retorico: è la distanza fra
+        l'oggetto che è sopravvissuto e il gesto che lo ha generato. Imparare a
+        scavalcarlo, in entrambe le direzioni, è il mestiere di Gabriella Marano
+        — e l'unica ragione per cui questo progetto può esistere.
+      </p>
+    </div>
+  </section>
+
+  <Ornament class="my-8" />
+
+  <section class="mx-auto max-w-text px-6 py-16 sm:py-20">
+    <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+      III · Il metodo nelle due direzioni
+    </p>
+    <h2 class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
+      Dal mito al fenomeno. Dal caso alla matrice.
+    </h2>
+
+    <div class="mt-12 grid grid-cols-1 gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] md:grid-cols-2">
+      <article class="bg-ink-2 p-8 sm:p-10">
+        <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+          Prima direzione
+        </p>
+        <h3 class="mt-4 font-display text-2xl leading-tight text-bone sm:text-3xl">
+          Dal mito al fenomeno
+        </h3>
+        <p class="mt-6 font-serif leading-loose text-bone-dim">
+          Si parte dal testo classico. Medea, Aiace, Le Troiane: archetipi che
+          la tragedia ha messo in scena per la prima volta. Si chiede cosa quel
+          mito stesse già nominando — e si scopre che ha un nome anche oggi:
+          figlicidio, dissociazione, vittimizzazione secondaria.
+        </p>
+      </article>
+      <article class="bg-ink-2 p-8 sm:p-10">
+        <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+          Seconda direzione
+        </p>
+        <h3 class="mt-4 font-display text-2xl leading-tight text-bone sm:text-3xl">
+          Dal caso alla matrice
+        </h3>
+        <p class="mt-6 font-serif leading-loose text-bone-dim">
+          Si parte da un fenomeno reale — uno studio, una serie di casi, un
+          dato — e si torna indietro a cercare la forma che la cultura ne aveva
+          già fatto. Non per giustificarlo. Per non illudersi che sia inedito,
+          e quindi più semplice da liquidare.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <Ornament class="my-8" />
+
+  <section class="mx-auto max-w-text px-6 py-16 sm:py-24">
+    <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+      IV · La disciplina
+    </p>
+    <h2 class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
+      I cinque <span class="font-display italic text-gold-bright">mai</span>
+    </h2>
+    <p class="mt-8 font-serif text-lg leading-loose text-bone-dim">
+      Una redazione si riconosce da quello che decide di non fare. Sono i
+      vincoli che ci impediamo, ogni volta, di superare — perché distinguono
+      archè dalla cronaca nera che la imita.
+    </p>
+
+    <ol class="mt-12 space-y-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)]">
+      {
+        cinqueMai.map((m) => (
+          <li class="bg-ink-2 p-8 sm:p-10">
+            <div class="flex items-baseline gap-6">
+              <span class="font-display text-2xl text-gold-bright sm:text-3xl">
+                {m.n}
+              </span>
+              <h3 class="font-display text-xl leading-tight text-bone sm:text-2xl">
+                {m.titolo}
+              </h3>
+            </div>
+            <p class="mt-4 max-w-text pl-0 font-serif leading-loose text-bone-dim sm:pl-16">
+              {m.nota}
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="mx-auto max-w-text px-6 py-24 text-center sm:py-32">
+    <Ornament size="lg" />
+    <p class="mt-12 font-display text-2xl italic leading-tight text-bone sm:text-3xl">
+      Il caso non è mai il prodotto.
+    </p>
+    <p class="mt-6 font-serif leading-loose text-bone-dim">
+      Il prodotto è la lettura.
+    </p>
+  </section>
+</BaseLayout>

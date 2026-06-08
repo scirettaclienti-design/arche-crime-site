@@ -1,0 +1,163 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Ornament from '../../components/Ornament.astro';
+import MythMatrix from '../../components/MythMatrix.astro';
+import EpisodeCard from '../../components/EpisodeCard.astro';
+
+export const prerender = true;
+
+const episodi = (await getCollection('episodi', ({ data }) => data.pubblicato))
+  .sort((a, b) => a.data.numero - b.data.numero);
+
+const perMito = new Map<string, typeof episodi>();
+const perFenomeno = new Map<string, typeof episodi>();
+for (const ep of episodi) {
+  const mito = ep.data.mito;
+  const fen = ep.data.fenomeno;
+  const arrM = perMito.get(mito) ?? [];
+  arrM.push(ep);
+  perMito.set(mito, arrM);
+  const arrF = perFenomeno.get(fen) ?? [];
+  arrF.push(ep);
+  perFenomeno.set(fen, arrF);
+}
+
+const isEmpty = episodi.length === 0;
+---
+
+<BaseLayout
+  title="L'archivio"
+  description="L'archivio archè a doppia chiave: tutti gli episodi navigabili per mito greco di riferimento e per fenomeno criminologico. La matrice del progetto, resa pubblica."
+>
+  <PageHeader
+    eyebrow="L'archivio"
+    title="A doppia chiave"
+    intro="Ogni episodio di archè vive in due archivi insieme. Quello del mito che lo apre — Medea, Elettra, Aiace, Eracle, Le Troiane — e quello del fenomeno criminologico che mette a fuoco. Entra dal lato che preferisci."
+  />
+
+  {
+    isEmpty && (
+      <section class="mx-auto max-w-text px-6 py-12 text-center">
+        <div class="border border-[var(--line)] bg-ink-2 px-8 py-12 sm:px-12 sm:py-16">
+          <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+            archivio in apertura
+          </p>
+          <p class="mt-6 font-display text-2xl italic leading-tight text-bone sm:text-3xl">
+            Il primo episodio sta arrivando.
+          </p>
+          <p class="mt-6 font-serif leading-loose text-bone-dim">
+            archè si apre con Medea. Lavoriamo lentamente perché ogni episodio
+            attraversa cinque tappe e nessuna di queste sopporta la fretta.
+            Torna fra poco — oppure entra da
+            <a class="text-gold-bright hover:text-bone" href="/metodo">
+              Il metodo
+            </a>
+            mentre aspetti.
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
+    <header class="mx-auto max-w-text text-center">
+      <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
+        Prima chiave
+      </p>
+      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+        Per mito
+      </h2>
+      <p class="mt-6 font-serif leading-loose text-bone-dim">
+        Cinque archetipi del teatro greco. Ogni mito è la porta da cui
+        entriamo, mai un travestimento del fenomeno reale che racconteremo poi.
+      </p>
+    </header>
+
+    {
+      !isEmpty && (
+        <div class="mt-12 space-y-12">
+          {[...perMito.entries()].map(([mito, lista]) => (
+            <div>
+              <h3 class="border-b border-[var(--line-soft)] pb-3 font-display text-2xl text-bone">
+                {mito}
+              </h3>
+              <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+                {lista.map((ep) => (
+                  <EpisodeCard
+                    numero={ep.data.numero}
+                    titolo={ep.data.titolo}
+                    mito={ep.data.mito}
+                    fenomeno={ep.data.fenomeno}
+                    slug={ep.data.slug}
+                    fonte={ep.data.fonte}
+                    durata={ep.data.durata}
+                    estratto={ep.data.estratto}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </section>
+
+  <MythMatrix />
+
+  <Ornament class="my-12" />
+
+  <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
+    <header class="mx-auto max-w-text text-center">
+      <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
+        Seconda chiave
+      </p>
+      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+        Per fenomeno
+      </h2>
+      <p class="mt-6 font-serif leading-loose text-bone-dim">
+        Il figlicidio. Il trauma familiare. Il crollo dell'identità. La perdita
+        di controllo. La vittimizzazione secondaria. Cinque famiglie di fenomeni
+        criminologici reali, ognuna con il proprio mito d'apertura.
+      </p>
+    </header>
+
+    {
+      !isEmpty && (
+        <div class="mt-12 space-y-12">
+          {[...perFenomeno.entries()].map(([fenomeno, lista]) => (
+            <div>
+              <h3 class="border-b border-[var(--line-soft)] pb-3 font-display text-xl italic text-bone">
+                {fenomeno}
+              </h3>
+              <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+                {lista.map((ep) => (
+                  <EpisodeCard
+                    numero={ep.data.numero}
+                    titolo={ep.data.titolo}
+                    mito={ep.data.mito}
+                    fenomeno={ep.data.fenomeno}
+                    slug={ep.data.slug}
+                    fonte={ep.data.fonte}
+                    durata={ep.data.durata}
+                    estratto={ep.data.estratto}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    {
+      isEmpty && (
+        <p class="mx-auto mt-12 max-w-text text-center font-display text-base italic text-bone-faint">
+          La vista per fenomeno si popolerà man mano che gli episodi entrano in
+          archivio. {/* TODO(blocco-app): React island con filtri reali quando ci sono ≥3 episodi pubblicati */}
+        </p>
+      )
+    }
+  </section>
+</BaseLayout>

@@ -1,21 +1,121 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import EpisodeCard from '../components/EpisodeCard.astro';
+import Ornament from '../components/Ornament.astro';
 
 export const prerender = true;
+
+const porte = [
+  {
+    eyebrow: 'Guarda',
+    titolo: 'Gli episodi',
+    descrizione:
+      'Cinque tappe per ogni storia: archeologia, scena, decodifica, presente, restituzione. Senza fretta.',
+    href: '/episodi',
+  },
+  {
+    eyebrow: 'Ascolta',
+    titolo: 'Dal vivo',
+    descrizione:
+      'archè è anche teatro e parola: tappe negli istituti, nei festival, nelle aule.',
+    href: '/dal-vivo',
+  },
+  {
+    eyebrow: 'Partecipa',
+    titolo: 'La formazione',
+    descrizione:
+      'Masterclass, corsi e un libro: per chi vuole capire il metodo da dentro, non solo guardarlo.',
+    href: '/formazione',
+  },
+];
 ---
 
 <BaseLayout
-  description="archè — dal mito alla mente. Criminologia letta attraverso il mito greco, di Gabriella Marano."
+  description="archè — dal mito alla mente. Una piattaforma editoriale di Gabriella Marano: criminologia letta attraverso il mito greco, senza cronaca nera."
 >
-  <section class="mx-auto max-w-text px-6 py-32 text-center sm:py-40">
+  <section class="mx-auto max-w-text px-6 pt-24 pb-16 text-center sm:pt-32 sm:pb-20">
     <p class="mb-8 text-xs uppercase tracking-eyebrow text-gold-bright">
-      archè
+      ἀρχή · origine
     </p>
-    <h1 class="mb-8 font-display text-5xl leading-tight text-bone sm:text-7xl">
-      archè<span class="text-gold-bright"> ◆</span>
+    <h1 class="font-display text-5xl leading-tight text-bone sm:text-6xl md:text-7xl">
+      Dal mito<br />alla mente<span class="text-gold-bright">.</span>
     </h1>
-    <p class="font-display text-xl italic text-bone-dim sm:text-2xl">
-      dal mito alla mente
+    <Ornament class="mt-16" size="lg" />
+    <p class="mt-16 font-serif text-lg leading-loose text-bone-dim sm:text-xl">
+      archè è la piattaforma editoriale di Gabriella Marano. Una lettura
+      criminologica dei fenomeni umani che parte dal teatro greco — perché
+      le storie che ci raccontiamo da duemilacinquecento anni dicono molto
+      più della cronaca di ieri.
     </p>
+    <p class="mt-6 font-display italic text-lg text-bone sm:text-xl">
+      Non cronaca nera. Un metodo.
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
+    <header class="mx-auto max-w-text text-center">
+      <p class="mb-4 text-xs uppercase tracking-eyebrow text-gold-bright">
+        Ultimo episodio
+      </p>
+      <h2 class="font-display text-2xl leading-tight text-bone sm:text-3xl">
+        In apertura: Medea
+      </h2>
+    </header>
+
+    <div class="mx-auto mt-12 max-w-3xl">
+      <EpisodeCard
+        variant="feature"
+        numero={1}
+        slug="medea"
+        titolo="Medea, o del figlicidio"
+        mito="Medea"
+        fenomeno="il figlicidio come atto di annientamento dell'altro"
+        fonte="Euripide"
+        durata="32 min"
+        estratto="Prima di essere cronaca, è tragedia. Prima di essere diagnosi, è scena. Apriamo il sipario su una donna che il mito ha già condannato: e proviamo a leggere ciò che la cronaca, da sola, non riuscirebbe mai a spiegare."
+      />
+    </div>
+  </section>
+
+  <Ornament class="my-12" />
+
+  <section class="mx-auto max-w-wide px-6 py-20 sm:py-24">
+    <header class="mx-auto max-w-text text-center">
+      <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
+        Le tre porte
+      </p>
+      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+        Da dove si entra
+      </h2>
+      <p class="mt-6 font-serif text-base leading-loose text-bone-dim">
+        archè non è un canale, è una soglia. Tre modi diversi di attraversarla.
+      </p>
+    </header>
+
+    <ul class="mt-16 grid grid-cols-1 gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] md:grid-cols-3">
+      {
+        porte.map((porta) => (
+          <li class="bg-ink-2">
+            <a
+              href={porta.href}
+              class="group block h-full p-8 transition-colors duration-medium ease-out-quart hover:bg-ink-3 sm:p-10"
+            >
+              <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+                {porta.eyebrow}
+              </p>
+              <h3 class="mt-4 font-display text-2xl leading-tight text-bone transition-colors group-hover:text-gold-bright sm:text-3xl">
+                {porta.titolo}
+              </h3>
+              <p class="mt-5 font-serif text-base leading-loose text-bone-dim">
+                {porta.descrizione}
+              </p>
+              <p class="mt-8 text-xs uppercase tracking-eyebrow text-gold-bright transition-colors group-hover:text-bone">
+                Entra →
+              </p>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
   </section>
 </BaseLayout>

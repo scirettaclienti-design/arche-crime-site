@@ -1,0 +1,87 @@
+---
+interface Props {
+  title?: string;
+  eyebrow?: string;
+  showSource?: boolean;
+}
+
+const {
+  title = 'La matrice dei cinque archetipi',
+  eyebrow = 'archè · la matrice',
+  showSource = true,
+} = Astro.props;
+
+// I cinque archetipi del format archè.
+// Ogni mito = una chiave di lettura criminologica di un fenomeno reale.
+const miti = [
+  {
+    slug: 'medea',
+    nome: 'Medea',
+    fonte: 'Euripide',
+    chiave: 'Il figlicidio',
+    nota: 'Quando l\'amore tradito diventa annientamento.',
+  },
+  {
+    slug: 'elettra',
+    nome: 'Elettra',
+    fonte: 'Sofocle',
+    chiave: 'Il trauma familiare',
+    nota: 'La casa come scena del crimine ereditata.',
+  },
+  {
+    slug: 'aiace',
+    nome: 'Aiace',
+    fonte: 'Sofocle',
+    chiave: 'Il crollo',
+    nota: 'Quando l\'identità eroica non regge la perdita.',
+  },
+  {
+    slug: 'eracle',
+    nome: 'Eracle',
+    fonte: 'Euripide',
+    chiave: 'La perdita di controllo',
+    nota: 'La forza che si rivolta contro chi si dovrebbe proteggere.',
+  },
+  {
+    slug: 'troiane',
+    nome: 'Le Troiane',
+    fonte: 'Euripide',
+    chiave: 'La vittimizzazione',
+    nota: 'Le voci che la storia mette in secondo piano.',
+  },
+];
+---
+
+<section class="mx-auto max-w-wide px-6 py-20 sm:py-24">
+  <header class="mx-auto max-w-text text-center">
+    <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
+      {eyebrow}
+    </p>
+    <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+      {title}
+    </h2>
+  </header>
+
+  <ul
+    class="mt-16 grid grid-cols-1 gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] sm:grid-cols-2 lg:grid-cols-5"
+  >
+    {
+      miti.map((m) => (
+        <li class="bg-ink-2 p-8 transition-colors duration-medium ease-out-quart hover:bg-ink-3">
+          <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+            {m.chiave}
+          </p>
+          <h3 class="mt-3 font-display text-2xl leading-tight text-bone">
+            {m.nome}
+          </h3>
+          {showSource && (
+            <p class="mt-1 font-display text-sm italic text-bone-faint">
+              {m.fonte}
+            </p>
+          )}
+          <p class="mt-5 text-sm leading-loose text-bone-dim">{m.nota}</p>
+        </li>
+      ))
+    }
+  </ul>
+</section>

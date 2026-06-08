@@ -1,0 +1,83 @@
+---
+const year = new Date().getFullYear();
+
+const cols = [
+  {
+    titolo: 'Il progetto',
+    voci: [
+      { href: '/metodo', label: 'Il metodo' },
+      { href: '/chi-e', label: 'Chi è Gabriella Marano' },
+    ],
+  },
+  {
+    titolo: 'Archivio',
+    voci: [
+      { href: '/episodi', label: 'Tutti gli episodi' },
+      { href: '/dal-vivo', label: 'Calendario dal vivo' },
+      { href: '/formazione', label: 'Formazione' },
+    ],
+  },
+  {
+    titolo: 'Altrove',
+    voci: [
+      {
+        href: 'https://gabriellamarano.it',
+        label: 'gabriellamarano.it · attività forense',
+        external: true,
+      },
+    ],
+  },
+];
+---
+
+<footer class="relative z-10 mt-32 border-t border-[var(--line-soft)] bg-ink-2">
+  <div class="mx-auto max-w-wide px-4 py-16 sm:px-6">
+    <div class="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <a
+          href="/"
+          class="font-display text-xl tracking-tight text-bone hover:text-gold-bright"
+        >
+          archè<span class="text-gold-bright"> ◆</span>
+        </a>
+        <p class="mt-4 font-display italic text-sm text-bone-dim">
+          dal mito alla mente
+        </p>
+      </div>
+
+      {
+        cols.map((col) => (
+          <nav aria-label={col.titolo}>
+            <p class="mb-4 text-xs uppercase tracking-eyebrow text-gold-bright">
+              {col.titolo}
+            </p>
+            <ul class="space-y-3 text-sm text-bone-dim">
+              {col.voci.map((voce) => (
+                <li>
+                  <a
+                    href={voce.href}
+                    {...('external' in voce && voce.external
+                      ? { target: '_blank', rel: 'noopener noreferrer' }
+                      : {})}
+                    class="transition-colors hover:text-bone"
+                  >
+                    {voce.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+
+    <div
+      class="mt-16 flex flex-col gap-3 border-t border-[var(--line-soft)] pt-8 text-xs uppercase tracking-eyebrow text-bone-faint sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>© {year} — archè · una piattaforma editoriale</p>
+      <p class="font-display normal-case tracking-base italic text-bone-faint">
+        ἀρχή — l'origine
+      </p>
+    </div>
+  </div>
+</footer>

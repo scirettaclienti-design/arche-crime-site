@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Ornament from '../components/Ornament.astro';
+
+export const prerender = true;
+
+const catalogo = [
+  {
+    eyebrow: 'Masterclass',
+    titolo: 'Il metodo archè',
+    formato: 'Online · 4 incontri · gruppo ristretto',
+    descrizione:
+      'Quattro sessioni guidate da Gabriella Marano sul cuore del metodo: leggere un fenomeno criminale partendo dal mito che lo ha già nominato. Per chi scrive, insegna, comunica — e vuole farlo senza ricadere nella cronaca nera.',
+    perChi: 'Giornalisti culturali, divulgatori, autori, insegnanti.',
+  },
+  {
+    eyebrow: 'Corso lungo',
+    titolo: 'Mito e psiche del crimine',
+    formato: 'Online · 8 settimane · video + tutoring',
+    descrizione:
+      'Un percorso strutturato sui cinque archetipi che fanno da matrice ad archè: Medea, Elettra, Aiace, Eracle, Le Troiane. Per ogni archetipo, il fenomeno criminologico contemporaneo che incrocia — e gli strumenti per leggerlo.',
+    perChi: 'Professionisti dell\'aiuto, criminologi in formazione, operatori scolastici.',
+  },
+  {
+    eyebrow: 'Per le scuole',
+    titolo: 'Laboratorio per docenti',
+    formato: 'In presenza o ibrido · su richiesta',
+    descrizione:
+      'Un laboratorio progettato per chi insegna letteratura, storia, filosofia o scienze umane e vuole portare in classe i grandi temi della criminologia senza inciampare nel sensazionalismo. Ogni mito, una traccia didattica.',
+    perChi: 'Docenti di scuola superiore, referenti per l\'educazione alla legalità.',
+  },
+];
+
+const libro = {
+  eyebrow: 'Il libro',
+  titolo: 'archè · dal mito alla mente',
+  formato: 'In preparazione editoriale',
+  descrizione:
+    'Il libro che dà fondamento all\'intero progetto: una mappa scritta dei cinque archetipi, della doppia matrice — archeologica e criminologica — e dei vincoli redazionali che tengono archè distante dalla cronaca.',
+  nota:
+    'Annunceremo l\'editore e la data quando il manoscritto sarà chiuso. Iscriviti alla newsletter dal piè di pagina per ricevere l\'annuncio.',
+};
+---
+
+<BaseLayout
+  title="Formazione"
+  description="Il catalogo formativo di archè: masterclass per chi scrive di cronaca senza voler cadere nel sensazionalismo, un corso lungo sui cinque archetipi, un laboratorio per docenti, un libro in preparazione."
+>
+  <PageHeader
+    eyebrow="Formazione"
+    title="L'approfondimento"
+    intro="archè non è solo un canale: è un metodo. Chi vuole conoscerlo da dentro — e non solo guardarlo da fuori — trova qui il catalogo formativo. Tre percorsi e un libro, costruiti con la stessa cura con cui costruiamo gli episodi."
+  />
+
+  <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
+    <header class="mx-auto max-w-text text-center">
+      <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
+        Il catalogo
+      </p>
+      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+        Tre percorsi formativi
+      </h2>
+    </header>
+
+    <ul class="mt-16 grid grid-cols-1 gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] lg:grid-cols-3">
+      {
+        catalogo.map((corso) => (
+          <li class="flex flex-col bg-ink-2 p-8 sm:p-10">
+            <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+              {corso.eyebrow}
+            </p>
+            <h3 class="mt-4 font-display text-2xl leading-tight text-bone sm:text-3xl">
+              {corso.titolo}
+            </h3>
+            <p class="mt-2 font-display text-sm italic text-bone-faint">
+              {corso.formato}
+            </p>
+            <p class="mt-6 font-serif leading-loose text-bone-dim">
+              {corso.descrizione}
+            </p>
+            <div class="mt-6 border-t border-[var(--line-soft)] pt-6">
+              <p class="text-xs uppercase tracking-eyebrow text-bone-faint">
+                Per chi è pensato
+              </p>
+              <p class="mt-2 font-serif text-sm text-bone-dim">
+                {corso.perChi}
+              </p>
+            </div>
+            <div class="mt-auto pt-8">
+              {/* TODO(blocco-app): collegare a /formazione/{slug} con
+                  dettaglio + Stripe checkout. Per ora niente prezzo,
+                  niente CTA d'acquisto. */}
+              <p class="font-display text-sm italic text-bone-faint">
+                Aperture iscrizioni in arrivo.
+              </p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <Ornament class="my-12" />
+
+  <section class="mx-auto max-w-3xl px-6 py-16 sm:py-24">
+    <article class="border border-[var(--line)] bg-ink-2 p-10 sm:p-14">
+      <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+        {libro.eyebrow}
+      </p>
+      <h2 class="mt-6 font-display text-3xl leading-tight text-bone sm:text-5xl">
+        {libro.titolo}
+      </h2>
+      <p class="mt-3 font-display text-sm italic text-bone-faint">
+        {libro.formato}
+      </p>
+      <p class="mt-8 font-serif text-lg leading-loose text-bone-dim">
+        {libro.descrizione}
+      </p>
+      <p class="mt-6 font-serif leading-loose text-bone-faint">
+        {libro.nota}
+      </p>
+    </article>
+  </section>
+
+  <section class="mx-auto max-w-text px-6 py-16 text-center sm:py-20">
+    <Ornament size="md" />
+    <p class="mt-10 font-display text-xl italic leading-tight text-bone sm:text-2xl">
+      Non vendiamo formazione: la costruiamo.
+    </p>
+    <p class="mt-4 font-serif leading-loose text-bone-dim">
+      I percorsi aprono quando sono pronti, non quando sarebbe comodo.
+    </p>
+  </section>
+</BaseLayout>

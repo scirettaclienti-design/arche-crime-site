@@ -1,0 +1,45 @@
+---
+const navLinks = [
+  { href: '/metodo', label: 'Metodo' },
+  { href: '/episodi', label: 'Episodi' },
+  { href: '/dal-vivo', label: 'Dal vivo' },
+  { href: '/formazione', label: 'Formazione' },
+  { href: '/chi-e', label: 'Chi è' },
+];
+
+const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string): boolean =>
+  href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+---
+
+<header class="relative z-20 border-b border-[var(--line-soft)]">
+  <nav
+    class="mx-auto flex max-w-wide flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6"
+    aria-label="Navigazione principale"
+  >
+    <a
+      href="/"
+      class="font-display text-lg tracking-tight text-bone transition-colors hover:text-gold-bright"
+    >
+      archè<span class="text-gold-bright"> ◆</span>
+    </a>
+    <ul class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs uppercase tracking-eyebrow text-bone-dim">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              class:list={[
+                'transition-colors hover:text-bone',
+                isActive(link.href) && 'text-bone',
+              ]}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>

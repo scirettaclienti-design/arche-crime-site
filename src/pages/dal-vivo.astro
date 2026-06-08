@@ -1,0 +1,237 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Ornament from '../components/Ornament.astro';
+
+export const prerender = true;
+
+const formati = [
+  {
+    titolo: 'Lezione-spettacolo',
+    durata: '90 min · platea fino a 300',
+    nota:
+      'Il format originale di archè: un mito greco entra in scena, un fenomeno criminologico ne esce. Pensata per teatri, festival e rassegne culturali.',
+  },
+  {
+    titolo: 'Incontro nelle scuole',
+    durata: '60 min · classi 4ª-5ª superiore',
+    nota:
+      'Versione pensata per l\'aula. Niente sensazionalismo, molto metodo: si entra dal testo classico — Euripide, Sofocle — e si torna al presente con strumenti di lettura, non con titoli da cronaca.',
+  },
+  {
+    titolo: 'Conferenza professionale',
+    durata: '45-60 min · ordini, master, convegni',
+    nota:
+      'Per operatori della giustizia, della salute mentale, dell\'educazione. Lo stesso metodo, calibrato sul vocabolario di chi è già dentro la materia.',
+  },
+];
+---
+
+<BaseLayout
+  title="Dal vivo"
+  description="Il calendario di archè dal vivo: lezioni-spettacolo, incontri nelle scuole, conferenze professionali. E un modulo di richiesta per teatri, scuole e istituzioni che vogliono ospitare una tappa."
+>
+  <PageHeader
+    eyebrow="Dal vivo"
+    title="La prova"
+    intro="archè non vive solo nello schermo. È nata in teatro e in aula — è lì che il metodo viene messo alla prova, perché solo davanti a una platea reale capisci se quello che dici regge."
+  />
+
+  <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
+    <header class="mx-auto max-w-text text-center">
+      <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
+        Il calendario
+      </p>
+      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+        Le prossime tappe
+      </h2>
+    </header>
+
+    <div class="mx-auto mt-12 max-w-2xl border border-[var(--line)] bg-ink-2 px-8 py-12 text-center sm:px-12 sm:py-16">
+      <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+        calendario in costruzione
+      </p>
+      <p class="mt-6 font-display text-xl italic leading-tight text-bone sm:text-2xl">
+        Le date di stagione arriveranno qui non appena confermate.
+      </p>
+      <p class="mt-6 font-serif text-base leading-loose text-bone-dim">
+        Nel frattempo, se rappresenti un teatro, una scuola o un'istituzione
+        che vorrebbe ospitare una tappa, il modulo qui sotto è già attivo.
+      </p>
+    </div>
+  </section>
+
+  <Ornament class="my-12" />
+
+  <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
+    <header class="mx-auto max-w-text text-center">
+      <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
+        I tre formati
+      </p>
+      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+        Tre modi di stare in scena
+      </h2>
+    </header>
+
+    <ul class="mt-16 grid grid-cols-1 gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] md:grid-cols-3">
+      {
+        formati.map((f) => (
+          <li class="bg-ink-2 p-8 sm:p-10">
+            <h3 class="font-display text-2xl leading-tight text-bone">
+              {f.titolo}
+            </h3>
+            <p class="mt-3 text-xs uppercase tracking-eyebrow text-gold-bright">
+              {f.durata}
+            </p>
+            <p class="mt-6 font-serif text-base leading-loose text-bone-dim">
+              {f.nota}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <Ornament class="my-12" />
+
+  <section
+    id="richiesta-tappa"
+    class="mx-auto max-w-3xl px-6 py-20 sm:py-24"
+  >
+    <header class="text-center">
+      <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
+        Richiesta tappa
+      </p>
+      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+        Ospitare archè dal vivo
+      </h2>
+      <p class="mt-6 font-serif text-base leading-loose text-bone-dim">
+        Compila i campi qui sotto. Risponde Gabriella Marano in persona, in
+        genere entro una settimana, con una proposta calibrata sul tuo
+        contesto.
+      </p>
+    </header>
+
+    {/* TODO(blocco-backend): collegare invio a endpoint /api/richiesta-tappa
+       (Resend o SMTP). Per ora il bottone è disabilitato, nessun dato lascia
+       il browser. */}
+    <form
+      class="mt-12 space-y-6 border border-[var(--line-soft)] bg-ink-2 p-8 sm:p-10"
+      action="#"
+      novalidate
+      aria-describedby="richiesta-status"
+    >
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <label class="block">
+          <span class="text-xs uppercase tracking-eyebrow text-gold-bright">
+            Tipo di istituzione
+          </span>
+          <select
+            name="tipo"
+            disabled
+            class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone outline-none focus:border-gold disabled:opacity-60"
+          >
+            <option value="">Seleziona…</option>
+            <option value="teatro">Teatro o festival</option>
+            <option value="scuola">Scuola superiore</option>
+            <option value="universita">Università o master</option>
+            <option value="ordine">Ordine professionale</option>
+            <option value="altro">Altro</option>
+          </select>
+        </label>
+
+        <label class="block">
+          <span class="text-xs uppercase tracking-eyebrow text-gold-bright">
+            Città
+          </span>
+          <input
+            type="text"
+            name="citta"
+            disabled
+            placeholder="Es. Roma, Milano, Bari"
+            class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone placeholder:text-bone-faint outline-none focus:border-gold disabled:opacity-60"
+          />
+        </label>
+
+        <label class="block">
+          <span class="text-xs uppercase tracking-eyebrow text-gold-bright">
+            Nome dell'ente
+          </span>
+          <input
+            type="text"
+            name="ente"
+            disabled
+            class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone outline-none focus:border-gold disabled:opacity-60"
+          />
+        </label>
+
+        <label class="block">
+          <span class="text-xs uppercase tracking-eyebrow text-gold-bright">
+            Periodo desiderato
+          </span>
+          <input
+            type="text"
+            name="periodo"
+            disabled
+            placeholder="Es. autunno 2026, gennaio 2027"
+            class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone placeholder:text-bone-faint outline-none focus:border-gold disabled:opacity-60"
+          />
+        </label>
+
+        <label class="block">
+          <span class="text-xs uppercase tracking-eyebrow text-gold-bright">
+            Referente
+          </span>
+          <input
+            type="text"
+            name="referente"
+            disabled
+            class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone outline-none focus:border-gold disabled:opacity-60"
+          />
+        </label>
+
+        <label class="block">
+          <span class="text-xs uppercase tracking-eyebrow text-gold-bright">
+            Email
+          </span>
+          <input
+            type="email"
+            name="email"
+            disabled
+            class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone outline-none focus:border-gold disabled:opacity-60"
+          />
+        </label>
+      </div>
+
+      <label class="block">
+        <span class="text-xs uppercase tracking-eyebrow text-gold-bright">
+          Una nota in più (facoltativa)
+        </span>
+        <textarea
+          name="note"
+          rows="4"
+          disabled
+          placeholder="Una rassegna, una classe, un convegno: raccontaci il contesto."
+          class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone placeholder:text-bone-faint outline-none focus:border-gold disabled:opacity-60"
+        ></textarea>
+      </label>
+
+      <div class="flex flex-col gap-4 border-t border-[var(--line-soft)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <p
+          id="richiesta-status"
+          class="font-display text-sm italic text-bone-faint"
+        >
+          Modulo in apertura: l'invio sarà attivo a breve.
+        </p>
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          class="border border-[var(--line)] px-6 py-3 text-xs uppercase tracking-eyebrow text-bone-faint disabled:cursor-not-allowed"
+        >
+          Invia richiesta
+        </button>
+      </div>
+    </form>
+  </section>
+</BaseLayout>

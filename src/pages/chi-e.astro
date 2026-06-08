@@ -1,0 +1,142 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Ornament from '../components/Ornament.astro';
+
+export const prerender = true;
+
+const tratti = [
+  {
+    n: '01',
+    titolo: 'Una doppia competenza',
+    nota:
+      'Archeologa e criminologa: due discipline che in Italia raramente si parlano e che Gabriella ha attraversato entrambe per intero. archè nasce dal punto preciso in cui si toccano.',
+  },
+  {
+    n: '02',
+    titolo: 'Un rigore forense',
+    nota:
+      'Anni di lavoro in contesti formali — perizie, consulenze, aule giudiziarie — insegnano una cosa difficile da fingere: parlare di crimine con la stessa cautela con cui si maneggia un atto.',
+  },
+  {
+    n: '03',
+    titolo: 'Una postura etica',
+    nota:
+      'Niente nome di vittima recente come gancio, niente diagnosi su persone reali, niente caso della settimana. archè è anche, e prima di tutto, una scelta di cosa non fare.',
+  },
+  {
+    n: '04',
+    titolo: 'Una voce divulgativa',
+    nota:
+      'Il rigore non è un alibi per essere illeggibili. La voce di archè cerca chi ascolta — studenti, lettori curiosi, professionisti di altre discipline — e parla a tutti loro nella stessa stanza.',
+  },
+];
+---
+
+<BaseLayout
+  title="Chi è"
+  description="Chi c'è dietro archè: Gabriella Marano, archeologa e criminologa. Per l'attività forense — perizie, consulenze, casi — il riferimento è il sito istituzionale gabriellamarano.it."
+>
+  <PageHeader
+    eyebrow="Chi è"
+    title="Gabriella Marano"
+    intro="archè ha una sola voce, perché nasce da una sola persona. Non è un'orchestra: è un metodo, e i metodi appartengono a chi li ha messi a punto camminando lungo il fossato fra due discipline."
+  />
+
+  <section class="mx-auto max-w-text px-6 py-16 sm:py-20">
+    <div class="space-y-6 font-serif text-lg leading-loose text-bone-dim">
+      <p>
+        Gabriella Marano è archeologa e criminologa. Le due parole stanno bene
+        sulla stessa riga solo se uno le ha praticate davvero: significa aver
+        passato anni a leggere strati, frammenti e contesti — e altri anni a
+        leggere persone, dichiarazioni e scene.
+      </p>
+      <p>
+        archè è il punto in cui queste due competenze smettono di essere due
+        biografie parallele e diventano un unico sguardo. È per questo che il
+        progetto non poteva nascere da un'agenzia, da una redazione collettiva,
+        da una collana editoriale: doveva nascere da chi aveva attraversato
+        entrambi i fossati.
+      </p>
+    </div>
+  </section>
+
+  <Ornament class="my-8" />
+
+  <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
+    <header class="mx-auto max-w-text text-center">
+      <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
+        I quattro tratti
+      </p>
+      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+        Da dove viene la voce
+      </h2>
+    </header>
+
+    <ol class="mt-16 grid grid-cols-1 gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] md:grid-cols-2">
+      {
+        tratti.map((t) => (
+          <li class="bg-ink-2 p-8 sm:p-10">
+            <div class="flex items-baseline gap-6">
+              <span class="font-display text-3xl text-gold-bright">
+                {t.n}
+              </span>
+              <h3 class="font-display text-xl leading-tight text-bone sm:text-2xl">
+                {t.titolo}
+              </h3>
+            </div>
+            <p class="mt-4 font-serif leading-loose text-bone-dim">
+              {t.nota}
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <Ornament class="my-12" />
+
+  <section class="mx-auto max-w-text px-6 py-16 sm:py-24">
+    <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+      Una nota importante
+    </p>
+    <h2 class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
+      L'attività forense ha un'altra casa
+    </h2>
+    <div class="mt-8 space-y-6 font-serif text-lg leading-loose text-bone-dim">
+      <p>
+        archè è la voce editoriale di Gabriella Marano. L'attività professionale
+        — perizie, consulenze tecniche, casi reali, formazione rivolta a
+        operatori della giustizia — ha invece il suo sito istituzionale, dove
+        trovi credenziali, ambiti di intervento e modalità di contatto formali.
+      </p>
+      <p>
+        Separare le due case non è una mossa di marketing: è la stessa
+        disciplina dei cinque <em class="font-display text-bone">mai</em>.
+        Su archè non ci sono casi reali in corso, su gabriellamarano.it non c'è
+        teatro greco. Ognuno al suo registro.
+      </p>
+    </div>
+
+    <div class="mt-12 border border-[var(--line)] bg-ink-2 p-8 sm:p-10">
+      <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+        Per l'attività forense
+      </p>
+      <p class="mt-4 font-display text-xl leading-tight text-bone sm:text-2xl">
+        gabriellamarano.it
+      </p>
+      <p class="mt-3 font-serif leading-loose text-bone-dim">
+        Il sito istituzionale di Gabriella Marano — perizie, consulenze,
+        formazione professionale.
+      </p>
+      <a
+        href="https://gabriellamarano.it"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mt-8 inline-block text-xs uppercase tracking-eyebrow text-gold-bright transition-colors hover:text-bone"
+      >
+        Vai a gabriellamarano.it →
+      </a>
+    </div>
+  </section>
+</BaseLayout>

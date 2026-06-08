@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
 
 interface Props {
   title?: string;
@@ -18,14 +20,6 @@ const {
 const fullTitle = title ? `${title} · archè` : 'archè · dal mito alla mente';
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).toString() : undefined;
-
-const navLinks = [
-  { href: '/metodo', label: 'Metodo' },
-  { href: '/episodi', label: 'Episodi' },
-  { href: '/dal-vivo', label: 'Dal vivo' },
-  { href: '/formazione', label: 'Formazione' },
-  { href: '/chi-e', label: 'Chi è' },
-];
 ---
 
 <!doctype html>
@@ -59,35 +53,12 @@ const navLinks = [
     <meta name="generator" content={Astro.generator} />
   </head>
   <body class="bg-ink text-bone font-serif min-h-screen antialiased">
-    <header class="relative z-20 border-b border-[var(--line-soft)]">
-      <nav
-        class="mx-auto flex max-w-wide flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6"
-      >
-        <a href="/" class="font-display text-lg tracking-tight text-bone">
-          archè<span class="text-gold-bright"> ◆</span>
-        </a>
-        <ul
-          class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs uppercase tracking-eyebrow text-bone-dim"
-        >
-          {navLinks.map((link) => (
-            <li>
-              <a href={link.href} class="transition-colors hover:text-bone">
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </header>
+    <Nav />
 
     <main class="relative z-10">
       <slot />
     </main>
 
-    <footer
-      class="relative z-10 mt-24 border-t border-[var(--line-soft)] py-10 text-center text-xs uppercase tracking-eyebrow text-bone-faint"
-    >
-      archè — dal mito alla mente
-    </footer>
+    <Footer />
   </body>
 </html>
