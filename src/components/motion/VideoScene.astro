@@ -1,0 +1,203 @@
+---
+/**
+ * VideoScene — atmosfera video per le sezioni editoriali.
+ *
+ * Contratto:
+ *  1. Il contenuto editoriale (testo, titoli, CTA) DEV'essere leggibile
+ *     SENZA video. Il video è atmosfera, non sostanza.
+ *  2. Lazy load via IntersectionObserver (rootMargin 25%): il video parte a
+ *     pre-caricarsi solo quando la sezione sta per entrare nel viewport.
+ *  3. A `prefers-reduced-motion: reduce` → si mostra SOLO il poster image,
+ *     mai play.
+ *  4. A `navigator.connection.saveData === true` → SOLO poster, mai play.
+ *  5. Su mobile (< 640px) il video si comporta come poster di default a
+ *     meno di `mobileVideo={true}` esplicito — il peso del video MP4 è
+ *     spesso ingiustificato in 3G/4G.
+ *  6. `object-fit: cover` + `object-position: center` per mantenere il
+ *     soggetto centrale dei video archè (regola di "central development").
+ *
+ * Vincoli regia: i video archè devono avere azione concentrata nella metà
+ * centrale (40-50% width) e zone calme top/bottom — vedi prompt nel doc
+ * blocco 3a. Questo componente assume quel formato.
+ *
+ * Variants:
+ *  - 'background' (default): il video copre l'intera area della sezione,
+ *    z-index dietro al contenuto, opacity ridotta per leggibilità.
+ *  - 'inline':     riquadro contenuto con max-width, accanto/in mezzo al
+ *    contenuto testuale. Z-index normale, no opacità.
+ */
+
+interface Props {
+  /** Sorgente video MP4 (H.264 fallback). */
+  src: string;
+  /** Sorgente WebM (AV1 primary). Opzionale ma raccomandato. */
+  srcWebm?: string;
+  /** Poster image (.jpg/.webp) — sempre richiesto per fallback e LCP. */
+  poster: string;
+  /** Variante di layout (default 'background'). */
+  variant?: 'background' | 'inline';
+  /** Rapporto d'aspetto inline (default 16:9). Solo per variant='inline'. */
+  aspectRatio?: '16/9' | '4/3' | '1/1' | '9/16';
+  /** Opacità del video in modalità background (default 0.35). */
+  opacity?: number;
+  /** Mostra il video anche su mobile (< 640px). Default false (solo poster). */
+  mobileVideo?: boolean;
+  /** Descrizione semantica per a11y. */
+  ariaLabel?: string;
+  /** Classi extra. */
+  class?: string;
+}
+
+const {
+  src,
+  srcWebm,
+  poster,
+  variant = 'background',
+  aspectRatio = '16/9',
+  opacity = 0.35,
+  mobileVideo = false,
+  ariaLabel,
+  class: className = '',
+} = Astro.props as Props;
+
+const isBg = variant === 'background';
+---
+
+<div
+  class:list={[
+    'arche-videoscene',
+    isBg
+      ? 'pointer-events-none absolute inset-0 -z-10 overflow-hidden'
+      : 'relative overflow-hidden border border-[var(--line-soft)] bg-ink-2',
+    className,
+  ]}
+  data-videoscene
+  data-mobile-video={mobileVideo ? 'true' : 'false'}
+  data-src-mp4={src}
+  data-src-webm={srcWebm ?? ''}
+  style={
+    isBg
+      ? `--scene-opacity:${opacity};`
+      : `aspect-ratio:${aspectRatio};`
+  }
+  aria-label={ariaLabel}
+>
+  {/* Poster image: sempre visibile fino a quando il video non parte.
+      Garantisce LCP rapido e nessun flash. Se reduced-motion / saveData
+      / mobile-no-video → resta visibile per sempre. */}
+  <img
+    src={poster}
+    alt=""
+    aria-hidden="true"
+    loading="eager"
+    decoding="async"
+    class:list={[
+      'h-full w-full object-cover object-center',
+      isBg ? 'opacity-[var(--scene-opacity)]' : '',
+    ]}
+  />
+
+  {/* Slot per overlay decorativo (vignette extra, gradient, ecc.) */}
+  <slot name="overlay" />
+
+  {/* Il <video> viene iniettato dal client solo se la sezione entra nel
+      viewport e tutte le condizioni di playback sono OK. Pattern noscript-safe:
+      se JS non parte, l'utente vede il poster per sempre — contenuto editoriale
+      sopra è comunque integro. */}
+</div>
+
+<script>
+  type SceneEl = HTMLElement & {
+    _videosceneInited?: boolean;
+  };
+
+  function shouldPlay(el: SceneEl): boolean {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    const conn = (navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+    }).connection;
+    if (conn?.saveData) return false;
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    if (isMobile && el.dataset.mobileVideo !== 'true') return false;
+    // 2g/3g: skip video
+    if (conn?.effectiveType && /^([23]g|slow-2g)$/.test(conn.effectiveType)) return false;
+    return true;
+  }
+
+  function mountVideo(el: SceneEl): void {
+    if (el._videosceneInited) return;
+    el._videosceneInited = true;
+    if (!shouldPlay(el)) return;
+
+    const mp4 = el.dataset.srcMp4;
+    const webm = el.dataset.srcWebm;
+    if (!mp4) return;
+
+    const video = document.createElement('video');
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    (video as HTMLVideoElement & { webkitPlaysinline?: boolean }).webkitPlaysinline = true;
+    video.autoplay = false;
+    video.preload = 'metadata';
+    video.setAttribute('aria-hidden', 'true');
+    video.className = 'absolute inset-0 h-full w-full object-cover object-center';
+    video.style.opacity = '0';
+    video.style.transition = 'opacity 800ms ease-out';
+
+    if (webm) {
+      const sw = document.createElement('source');
+      sw.src = webm;
+      sw.type = 'video/webm';
+      video.appendChild(sw);
+    }
+    const sm = document.createElement('source');
+    sm.src = mp4;
+    sm.type = 'video/mp4';
+    video.appendChild(sm);
+
+    el.appendChild(video);
+
+    video.addEventListener(
+      'canplay',
+      () => {
+        void video.play().catch(() => {
+          // Autoplay bloccato: il poster resta. Nessun problema.
+        });
+      },
+      { once: true },
+    );
+    video.addEventListener(
+      'playing',
+      () => {
+        video.style.opacity = '1';
+      },
+      { once: true },
+    );
+  }
+
+  function init(): void {
+    const scenes = document.querySelectorAll<SceneEl>('[data-videoscene]');
+    if (!scenes.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            mountVideo(e.target as SceneEl);
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { rootMargin: '25%' },
+    );
+    scenes.forEach((s) => io.observe(s));
+  }
+
+  // Astro lo monta dopo il page-load; supporta anche view transitions future.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  document.addEventListener('astro:page-load', init);
+</script>

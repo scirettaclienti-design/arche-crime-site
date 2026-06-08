@@ -112,11 +112,29 @@ const formati = [
       </p>
     </header>
 
+    {/* Notice "modulo in apertura": un avviso visivo SOPRA il form perché i 6
+       input disabled da soli sembravano "rotti" non "in costruzione". */}
+    <div class="mt-12 flex items-start gap-4 border border-[var(--line)] bg-ink-2 p-6 sm:p-8">
+      <div class="font-secret text-3xl text-gold-bright">⌜</div>
+      <div class="font-serif text-sm leading-loose text-bone-dim">
+        <strong class="font-display font-normal italic text-bone">Modulo in apertura.</strong>
+        Il form qui sotto è una preview del contenuto che sarà attivo a breve.
+        Nel frattempo, per richieste immediate, scrivi a{' '}
+        <a
+          href="mailto:contatti@archecrime.com"
+          class="font-display italic text-gold-bright transition-colors hover:text-bone"
+        >
+          contatti@archecrime.com
+        </a>
+        — risponde Gabriella Marano in persona.
+      </div>
+    </div>
+
     {/* TODO(blocco-backend): collegare invio a endpoint /api/richiesta-tappa
        (Resend o SMTP). Per ora il bottone è disabilitato, nessun dato lascia
        il browser. */}
     <form
-      class="mt-12 space-y-6 border border-[var(--line-soft)] bg-ink-2 p-8 sm:p-10"
+      class="mt-6 space-y-6 border border-dashed border-[var(--line-soft)] bg-ink-2/50 p-8 sm:p-10"
       action="#"
       novalidate
       aria-describedby="richiesta-status"
@@ -129,7 +147,7 @@ const formati = [
           <select
             name="tipo"
             disabled
-            class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone outline-none focus:border-gold disabled:opacity-60"
+            class="mt-2 w-full border border-dashed border-[var(--line)] bg-transparent px-3 py-3 font-serif text-bone-faint outline-none disabled:cursor-not-allowed"
           >
             <option value="">Seleziona…</option>
             <option value="teatro">Teatro o festival</option>
@@ -148,6 +166,7 @@ const formati = [
             type="text"
             name="citta"
             disabled
+            aria-disabled="true"
             placeholder="Es. Roma, Milano, Bari"
             class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone placeholder:text-bone-faint outline-none focus:border-gold disabled:opacity-60"
           />
@@ -161,7 +180,7 @@ const formati = [
             type="text"
             name="ente"
             disabled
-            class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone outline-none focus:border-gold disabled:opacity-60"
+            class="mt-2 w-full border border-dashed border-[var(--line)] bg-transparent px-3 py-3 font-serif text-bone-faint outline-none disabled:cursor-not-allowed"
           />
         </label>
 
@@ -173,6 +192,7 @@ const formati = [
             type="text"
             name="periodo"
             disabled
+            aria-disabled="true"
             placeholder="Es. autunno 2026, gennaio 2027"
             class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone placeholder:text-bone-faint outline-none focus:border-gold disabled:opacity-60"
           />
@@ -186,7 +206,7 @@ const formati = [
             type="text"
             name="referente"
             disabled
-            class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone outline-none focus:border-gold disabled:opacity-60"
+            class="mt-2 w-full border border-dashed border-[var(--line)] bg-transparent px-3 py-3 font-serif text-bone-faint outline-none disabled:cursor-not-allowed"
           />
         </label>
 
@@ -198,7 +218,7 @@ const formati = [
             type="email"
             name="email"
             disabled
-            class="mt-2 w-full border border-[var(--line)] bg-ink px-3 py-3 font-serif text-bone outline-none focus:border-gold disabled:opacity-60"
+            class="mt-2 w-full border border-dashed border-[var(--line)] bg-transparent px-3 py-3 font-serif text-bone-faint outline-none disabled:cursor-not-allowed"
           />
         </label>
       </div>

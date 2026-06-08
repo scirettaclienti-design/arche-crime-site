@@ -32,22 +32,24 @@ const cols = [
 
 <footer class="relative z-10 mt-32 border-t border-[var(--line-soft)] bg-ink-2">
   <div class="mx-auto max-w-wide px-4 py-16 sm:px-6">
-    <div class="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
-      <div>
-        <a
-          href="/"
-          class="font-display text-xl tracking-tight text-bone hover:text-gold-bright"
-        >
-          archè<span class="text-gold-bright"> ◆</span>
-        </a>
-        <p class="mt-4 font-display italic text-sm text-bone-dim">
-          dal mito alla mente
-        </p>
-      </div>
+    {/* Riga 1: brand a tutta larghezza centrato — ancla simbolica del piè di pagina */}
+    <div class="text-center">
+      <a
+        href="/"
+        class="inline-block font-display text-2xl tracking-tight text-bone hover:text-gold-bright"
+      >
+        archè<span class="text-gold-bright"> ◆</span>
+      </a>
+      <p class="mt-2 font-display italic text-sm text-bone-dim">
+        dal mito alla mente
+      </p>
+    </div>
 
+    {/* Riga 2: 3 colonne tematiche, ben distribuite */}
+    <div class="mt-14 grid grid-cols-1 gap-12 border-t border-[var(--line-soft)] pt-12 sm:grid-cols-3 sm:gap-10">
       {
         cols.map((col) => (
-          <nav aria-label={col.titolo}>
+          <nav aria-label={col.titolo} class="text-center sm:text-left">
             <p class="mb-4 text-xs uppercase tracking-eyebrow text-gold-bright">
               {col.titolo}
             </p>
@@ -72,7 +74,7 @@ const cols = [
     </div>
 
     <div
-      class="mt-16 flex flex-col gap-3 border-t border-[var(--line-soft)] pt-8 text-xs uppercase tracking-eyebrow text-bone-faint sm:flex-row sm:items-center sm:justify-between"
+      class="mt-14 flex flex-col gap-3 border-t border-[var(--line-soft)] pt-6 text-xs uppercase tracking-eyebrow text-bone-faint sm:flex-row sm:items-center sm:justify-between"
     >
       <p>© {year} — archè · una piattaforma editoriale</p>
       <p class="font-display normal-case tracking-base italic text-bone-faint">
