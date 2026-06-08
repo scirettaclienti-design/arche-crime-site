@@ -40,8 +40,20 @@ interface Props {
   orientation?: 'horizontal' | 'vertical';
   /** Mostra il rombo oro come knot centrale del meandro. */
   showKnot?: boolean;
-  /** Velocità dello scrub: 0.6 = lento e setoso, 1 = istantaneo. */
+  /**
+   * Modalità di entrata della linea:
+   *  - 'scroll' (default): scrub allo scroll della sezione (separatore tra sezioni).
+   *  - 'arrival': il meandro si traccia UNA volta al page-load come gesto di
+   *    apertura, con delay+duration espliciti. Usato per il "filo che conduce
+   *    al titolo" in hero.
+   */
+  entrance?: 'scroll' | 'arrival';
+  /** Velocità dello scrub (solo per entrance='scroll'). 0.6 = lento e setoso. */
   scrub?: number;
+  /** Ritardo in s dell'entrance (solo per entrance='arrival'). */
+  arrivalDelay?: number;
+  /** Durata in s dell'entrance (solo per entrance='arrival'). */
+  arrivalDuration?: number;
   /** Larghezza dello stroke in unità SVG (default 0.4, sottile). */
   strokeWidth?: number;
   /** Classi extra Tailwind per il wrapper. */
@@ -54,11 +66,14 @@ const {
   modules = 6,
   orientation = 'horizontal',
   showKnot = true,
+  entrance = 'scroll',
   scrub = 0.6,
+  arrivalDelay = 0.5,
+  arrivalDuration = 1.2,
   strokeWidth = 0.4,
   class: className = '',
   color = 'var(--color-gold)',
-} = Astro.props;
+}: Props = Astro.props;
 
 const MOD_W = 12;
 const MOD_H = 6;
@@ -103,8 +118,11 @@ const knotY = MOD_H / 2;
 
 <div
   data-meander
+  data-meander-entrance={entrance}
   data-orientation={orientation}
   data-scrub={scrub}
+  data-arrival-delay={arrivalDelay}
+  data-arrival-duration={arrivalDuration}
   aria-hidden="true"
   class:list={[
     'arche-meander pointer-events-none select-none',

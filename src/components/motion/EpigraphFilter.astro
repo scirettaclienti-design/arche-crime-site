@@ -60,17 +60,34 @@
 </svg>
 
 <style is:inline>
+  /* Incisione lapidaria: due livelli che si rinforzano.
+     1) Filtro SVG: micro-displacement (~0.9px) sul contorno delle lettere
+        — il margine non è perfettamente liscio, come se fosse stato inciso.
+     2) Doppia text-shadow: una piccolissima ombra interna scura sotto-destra
+        e una micro-ombra dorata sopra-sinistra → la lettera ha un rilievo
+        in oro vecchio appena visibile.
+     Insieme, l'effetto è "scolpito nella pietra in oro antico". A vista
+     normale si percepisce solo che il titolo è "pesante" e non
+     "stampato"; ravvicinato, si nota la pelle dell'incisione. */
   .is-epigraph {
     filter: url('#arche-epigraph');
+    text-shadow:
+      0 0.5px 0 rgba(20, 17, 12, 0.55),
+      0 -0.5px 0 rgba(224, 198, 133, 0.06);
   }
+  /* Disattivazione su mobile: SVG filter + variable fonts su Safari iOS
+     producono artefatti irregolari. La text-shadow resta perché è
+     a basso impatto e GPU-cheap. */
   @media (max-width: 640px) {
     .is-epigraph {
       filter: none;
     }
   }
+  /* Reduced-motion: nessun trattamento, sobrietà assoluta. */
   @media (prefers-reduced-motion: reduce) {
     .is-epigraph {
       filter: none;
+      text-shadow: none;
     }
   }
 </style>

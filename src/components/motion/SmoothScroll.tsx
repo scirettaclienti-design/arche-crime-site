@@ -188,40 +188,64 @@ async function initMotion(state: MotionState): Promise<void> {
     }
   });
 
-  // ── MEANDER: stroke-dashoffset scrub allo scroll.
+  // ── MEANDER: due modalità.
+  //   1. 'scroll' (default): stroke-dashoffset scrub allo scroll della sezione
+  //      → la linea si traccia mentre l'utente scende. Usato per i separatori.
+  //   2. 'arrival': la linea si traccia UNA volta al page-load come gesto di
+  //      apertura ("il filo che conduce al titolo"). Usato nell'hero.
   document.querySelectorAll<HTMLElement>('[data-meander]').forEach((wrapper) => {
     const path = wrapper.querySelector<SVGPathElement>('path.meander-stroke');
     const knot = wrapper.querySelector<SVGGElement>('.meander-knot');
     if (!path) return;
     const length = path.getTotalLength();
-    const scrub = parseFloat(wrapper.dataset.scrub ?? '0.6');
+    const entrance = wrapper.dataset.meanderEntrance ?? 'scroll';
 
     gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
     if (knot) gsap.set(knot, { opacity: 0, scale: 0.6, transformOrigin: 'center center' });
 
-    gsap.to(path, {
-      strokeDashoffset: 0,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: wrapper,
-        start: 'top 92%',
-        end: 'bottom 35%',
-        scrub,
-      },
-    });
-
-    if (knot) {
-      gsap.to(knot, {
-        opacity: 1,
-        scale: 1,
-        duration: 0.6,
-        ease: 'power2.out',
+    if (entrance === 'arrival') {
+      const arrivalDelay = parseFloat(wrapper.dataset.arrivalDelay ?? '0.5');
+      const arrivalDuration = parseFloat(wrapper.dataset.arrivalDuration ?? '1.2');
+      gsap.to(path, {
+        strokeDashoffset: 0,
+        duration: arrivalDuration,
+        delay: arrivalDelay,
+        ease: 'power2.inOut',
+      });
+      if (knot) {
+        gsap.to(knot, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.6,
+          delay: arrivalDelay + arrivalDuration * 0.6,
+          ease: 'power2.out',
+        });
+      }
+    } else {
+      const scrub = parseFloat(wrapper.dataset.scrub ?? '0.6');
+      gsap.to(path, {
+        strokeDashoffset: 0,
+        ease: 'none',
         scrollTrigger: {
           trigger: wrapper,
-          start: 'top 70%',
-          once: true,
+          start: 'top 92%',
+          end: 'bottom 35%',
+          scrub,
         },
       });
+      if (knot) {
+        gsap.to(knot, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.6,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: wrapper,
+            start: 'top 70%',
+            once: true,
+          },
+        });
+      }
     }
   });
 

@@ -47,23 +47,37 @@ const porte = [
     </div>
 
     <div class="mx-auto max-w-text px-6 pt-24 pb-16 text-center sm:pt-32 sm:pb-20">
-      <RevealText variant="fade" delay={0.2} class="mb-8">
+      {/* Tempo d'entrata in hero (la "soglia"):
+          0.2s  eyebrow ἀρχή · origine appare
+          0.6s  il MEANDRO traccia per primo (1.2s, ease in-out)
+          1.6s  il sipario si apre sull'h1 (1.4s)
+          ~3.0s da quel momento manifesto e nota chiusano l'atto */}
+
+      <RevealText variant="fade" delay={0.2} class="mb-12">
         <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
           ἀρχή · origine
         </p>
       </RevealText>
 
-      <CurtainOpening delay={0.4} duration={1.5}>
-        <h1 class="font-display text-5xl leading-tight text-bone sm:text-6xl md:text-7xl">
+      <div class="mb-12">
+        <GreekMeander
+          modules={5}
+          entrance="arrival"
+          arrivalDelay={0.6}
+          arrivalDuration={1.2}
+          class="mx-auto max-w-md opacity-90"
+        />
+      </div>
+
+      <CurtainOpening delay={1.6} duration={1.4}>
+        <h1
+          class="is-epigraph font-display text-5xl leading-tight text-bone sm:text-6xl md:text-7xl"
+        >
           Dal mito<br />alla mente<span class="text-gold-bright">.</span>
         </h1>
       </CurtainOpening>
 
-      <div class="mt-16">
-        <GreekMeander modules={5} scrub={0.4} class="mx-auto max-w-md opacity-90" />
-      </div>
-
-      <RevealText variant="fade" delay={0.1} class="mt-16">
+      <RevealText variant="fade" delay={2.6} class="mt-16">
         <p class="font-serif text-lg leading-loose text-bone-dim sm:text-xl">
           archè è la piattaforma editoriale di Gabriella Marano. Una lettura
           criminologica dei fenomeni umani che parte dal teatro greco — perché
@@ -72,7 +86,7 @@ const porte = [
         </p>
       </RevealText>
 
-      <RevealText variant="fade" delay={0.3} class="mt-6">
+      <RevealText variant="fade" delay={2.9} class="mt-6">
         <p class="font-display italic text-lg text-bone sm:text-xl">
           Non cronaca nera. Un metodo.
         </p>
