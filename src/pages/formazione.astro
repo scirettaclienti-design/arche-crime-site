@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import Ornament from '../components/Ornament.astro';
+import VideoBackground from '../components/VideoBackground.astro';
 
 export const prerender = true;
 
@@ -47,11 +48,26 @@ const libro = {
   title="Formazione"
   description="Il catalogo formativo di archè: masterclass per chi scrive di cronaca senza voler cadere nel sensazionalismo, un corso lungo sui cinque archetipi, un laboratorio per docenti, un libro in preparazione."
 >
-  <PageHeader
-    eyebrow="Formazione"
-    title="L'approfondimento"
-    intro="archè non è solo un canale: è un metodo. Chi vuole conoscerlo da dentro — e non solo guardarlo da fuori — trova qui il catalogo formativo. Tre percorsi e un libro, costruiti con la stessa cura con cui costruiamo gli episodi."
-  />
+  {/* SFONDO video SOLO dietro l'header d'apertura. Vincolo etico:
+      le teste arcaiche restano nello spazio dell'approfondimento culturale,
+      non si accostano MAI al catalogo che parla di metodo applicato a casi
+      e fenomeni. Velo ink 0.65 — generoso per garantire leggibilità di
+      "L'approfondimento" e dell'intro su qualunque frame del video. */}
+  <section class="relative overflow-hidden">
+    <VideoBackground
+      name="formazione"
+      overlayOpacity={0.65}
+      overlayDirection="to bottom"
+      parallax={true}
+      parallaxAmount={50}
+      ariaLabel="Sfondo: teste scultoree arcaiche greche illuminate in oro su marmo nero"
+    />
+    <PageHeader
+      eyebrow="Formazione"
+      title="L'approfondimento"
+      intro="archè non è solo un canale: è un metodo. Chi vuole conoscerlo da dentro — e non solo guardarlo da fuori — trova qui il catalogo formativo. Tre percorsi e un libro, costruiti con la stessa cura con cui costruiamo gli episodi."
+    />
+  </section>
 
   <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
     <header class="mx-auto max-w-text text-center">

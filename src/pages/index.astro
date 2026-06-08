@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EpisodeCard from '../components/EpisodeCard.astro';
 import Ornament from '../components/Ornament.astro';
+import VideoBackground from '../components/VideoBackground.astro';
 import GreekMeander from '../components/motion/GreekMeander.astro';
 import RevealText from '../components/motion/RevealText.astro';
 import CurtainOpening from '../components/motion/CurtainOpening.astro';
@@ -37,20 +38,33 @@ const porte = [
   description="archè — dal mito alla mente. Una piattaforma editoriale di Gabriella Marano: criminologia letta attraverso il mito greco, senza cronaca nera."
 >
   <section class="relative overflow-hidden">
+    {/* SFONDO video: lucerna che si accende, dietro a tutto il testo dell'hero.
+        Velo ink 0.6 garantisce la leggibilità di "Dal mito alla mente" anche
+        quando la fiamma è al massimo. Parallax cinematico ma misurato (60px
+        desktop, 30 mobile). L'animazione d'arrivo (sipario+meandro+manifesto)
+        resta sopra il video, intatta. */}
+    <VideoBackground
+      name="hero"
+      overlayOpacity={0.62}
+      overlayDirection="to bottom"
+      parallax={true}
+      parallaxAmount={60}
+      ariaLabel="Sfondo: una lucerna a olio si accende lentamente nel buio di un tempio greco"
+    />
+
     {/* Hero-glow oro: parallax misurato, decorativo, mai sul testo.
-        Rinforzato vs. v1 — container più piccolo per concentrare la luce,
-        2 cerchi sovrapposti (deep dietro, bright davanti). */}
+        Rinforza la fiamma del video sotto, sopra il velo. */}
     <div
       aria-hidden="true"
       data-parallax-y="40"
-      class="pointer-events-none absolute left-1/2 top-[10vh] -z-10 h-[55vh] w-[55vh] -translate-x-1/2 opacity-90"
+      class="pointer-events-none absolute left-1/2 top-[10vh] -z-[5] h-[55vh] w-[55vh] -translate-x-1/2 opacity-70"
       style="background: radial-gradient(circle, var(--color-gold-deep) 0%, transparent 65%); mix-blend-mode: screen; filter: blur(60px);"
     >
     </div>
     <div
       aria-hidden="true"
       data-parallax-y="30"
-      class="pointer-events-none absolute left-1/2 top-[18vh] -z-10 h-[30vh] w-[30vh] -translate-x-1/2 opacity-80"
+      class="pointer-events-none absolute left-1/2 top-[18vh] -z-[5] h-[30vh] w-[30vh] -translate-x-1/2 opacity-60"
       style="background: radial-gradient(circle, var(--color-gold-bright) 0%, transparent 60%); mix-blend-mode: screen; filter: blur(80px);"
     >
     </div>

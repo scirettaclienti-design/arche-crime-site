@@ -406,6 +406,34 @@ async function initMotion(state: MotionState): Promise<void> {
     });
   });
 
+  // ── VIDEO PARALLAX: il <video> in VideoBackground si muove verticalmente
+  // mentre la sezione attraversa il viewport. Più lento del contenuto, scrub.
+  // Ampiezza in px (non %): desktop 60-80px, mobile dimezzato per evitare jitter.
+  // Lo scale 1.1 del wrapper è già stato impostato come transform iniziale dal
+  // markup astro: noi animiamo solo translateY in aggiunta.
+  document.querySelectorAll<HTMLElement>('[data-video-parallax="true"]').forEach((frame) => {
+    const baseAmount = parseFloat(frame.dataset.parallaxAmount ?? '60');
+    const amount = isMobile ? baseAmount * 0.5 : baseAmount;
+    const section = frame.closest('section') ?? frame.parentElement;
+    if (!section) return;
+    // Parto a +amount, finisco a -amount, scrub lentissimo.
+    gsap.fromTo(
+      frame,
+      { y: amount, scale: 1.1 },
+      {
+        y: -amount,
+        scale: 1.1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1.2,
+        },
+      },
+    );
+  });
+
   // ── Raccogli i trigger per il cleanup
   state.triggers = ScrollTrigger.getAll() as unknown as MotionState['triggers'];
 

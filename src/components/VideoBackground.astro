@@ -1,0 +1,243 @@
+---
+/**
+ * VideoBackground — sfondo video atmosferico per sezioni editoriali.
+ *
+ * REGOLE NON NEGOZIABILI
+ *  1. Il video sta DIETRO il contenuto, sempre muto, in loop, autoplay
+ *     coordinato con prefers-reduced-motion + saveData + connessione lenta.
+ *  2. Il testo che ci sta sopra è leggibile PRIMA di tutto: un velo gradient
+ *     ink copre il video. Default opacità 0.6 (regolabile per chi sa).
+ *  3. Reduced-motion / saveData / 2g-3g / mobile-no-video → mai play.
+ *     Resta solo il poster + velo. Il contenuto non cambia mai.
+ *  4. Zero CLS: contenitore con altezza decisa dal genitore. Object-fit cover
+ *     + scale 1.1 di sicurezza per evitare che il parallax mostri bordi vuoti.
+ *  5. Il parallax è opt-in (data-video-parallax). Senza, il video è statico.
+ *
+ * USAGE
+ *   <section class="relative ...">
+ *     <VideoBackground
+ *       name="hero"
+ *       overlayOpacity={0.55}
+ *       parallax={true}
+ *       ariaLabel="Lucerna a olio che si accende su pietra greca"
+ *     />
+ *     ...contenuto sopra...
+ *   </section>
+ *
+ * Il parent DEVE avere `position: relative` (e `overflow: hidden` se non vuoi
+ * che il video sbordi durante il parallax).
+ *
+ * Path convention: src/components/VideoBackground.astro consuma file in
+ * /video/{name}.webm, /video/{name}.mp4, /video/{name}-poster.jpg
+ * (vedi public/video/).
+ */
+
+interface Props {
+  /** Nome base (es. "hero" → /video/hero.webm + .mp4 + -poster.jpg). */
+  name: string;
+  /** Opacità del velo ink (0..1). Default 0.6. Più alto = testo più leggibile. */
+  overlayOpacity?: number;
+  /** Direzione del gradient del velo (default top-to-bottom). */
+  overlayDirection?: 'to bottom' | 'to top' | 'radial';
+  /** Attiva parallax scroll. Vedi handler in SmoothScroll.tsx. */
+  parallax?: boolean;
+  /** Intensità parallax in px (desktop). Mobile: dimezzato. Default 60. */
+  parallaxAmount?: number;
+  /** Descrizione semantica del video, leggibile da screen reader. */
+  ariaLabel?: string;
+  /** Forza poster-only (utile per test o casi noti). */
+  posterOnly?: boolean;
+  /** Classi extra del wrapper. */
+  class?: string;
+}
+
+const {
+  name,
+  overlayOpacity = 0.6,
+  overlayDirection = 'to bottom',
+  parallax = false,
+  parallaxAmount = 60,
+  ariaLabel,
+  posterOnly = false,
+  class: className = '',
+} = Astro.props as Props;
+
+const webm = `/video/${name}.webm`;
+const mp4 = `/video/${name}.mp4`;
+const poster = `/video/${name}-poster.jpg`;
+
+const overlayBg =
+  overlayDirection === 'radial'
+    ? `radial-gradient(ellipse at center, transparent 0%, var(--color-ink) 95%)`
+    : `linear-gradient(${overlayDirection}, var(--color-ink) 0%, transparent 30%, transparent 70%, var(--color-ink) 100%)`;
+---
+
+<div
+  class:list={[
+    'arche-videobg pointer-events-none absolute inset-0 -z-10 overflow-hidden',
+    className,
+  ]}
+  data-videobg
+  data-poster-only={posterOnly ? 'true' : 'false'}
+  aria-hidden="true"
+>
+  {/* Strato 1: video / poster. Inizio già scale-1.1 per dare margine al parallax. */}
+  <div
+    class="absolute inset-0 will-change-transform"
+    data-videobg-frame
+    data-video-parallax={parallax ? 'true' : 'false'}
+    data-parallax-amount={parallaxAmount}
+    style="transform: translate3d(0,0,0) scale(1.1);"
+  >
+    <img
+      src={poster}
+      alt={ariaLabel ?? ''}
+      loading="eager"
+      decoding="async"
+      class="h-full w-full object-cover object-center"
+      data-videobg-poster
+    />
+
+    {/* Il <video> viene IIETTATO dal client solo quando le condizioni
+        di playback (no reduced-motion, no saveData, viewport, ecc.) sono OK.
+        Pattern progressive enhancement: niente JS → niente video, contenuto integro. */}
+    <video
+      class="absolute inset-0 h-full w-full object-cover object-center opacity-0 transition-opacity duration-700"
+      data-videobg-video
+      data-src-webm={webm}
+      data-src-mp4={mp4}
+      poster={poster}
+      muted
+      loop
+      playsinline
+      preload="none"
+      aria-hidden="true"
+    >
+    </video>
+  </div>
+
+  {/* Strato 2: velo ink sopra il video. Garantisce leggibilità testo. */}
+  <div
+    class="absolute inset-0"
+    style={`background: ${overlayBg}; opacity: ${overlayOpacity};`}
+  >
+  </div>
+
+  {/* Strato 3: grana noise sottilissima (già nel design system come body::before
+     ma quello è behind tutto — qui ne mettiamo una extra, solo dentro il videobg). */}
+  <div
+    class="absolute inset-0 opacity-[0.04] mix-blend-overlay"
+    style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.82%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E');"
+  >
+  </div>
+</div>
+
+<script>
+  /**
+   * VideoBackground client controller — decide se e quando avviare il video.
+   *
+   * Condizioni di playback (TUTTE devono essere true):
+   *   - prefers-reduced-motion: NOT reduce
+   *   - navigator.connection.saveData: NOT true
+   *   - navigator.connection.effectiveType: NOT in (slow-2g, 2g, 3g)
+   *   - data-poster-only="false"
+   *   - il videobg è entrato nel viewport (IntersectionObserver rootMargin 25%)
+   *
+   * Su mobile (<640px) carichiamo lo stesso pacchetto MP4 ma con preload
+   * ridotto e parallax dimezzato (gestito in SmoothScroll). NON poster-only di
+   * default: l'estetica scelta richiede l'atmosfera anche su mobile, ma a
+   * connessioni 2g/3g il check effectiveType blocca lo scaricamento. Vincolo
+   * leggibilità: il velo opacity 0.6 garantisce il testo anche se il poster è
+   * leggermente "rumoroso" sul mobile a banda ridotta.
+   */
+
+  type Bg = HTMLElement & { _videobgInited?: boolean };
+
+  function shouldPlay(bg: Bg): boolean {
+    if (bg.dataset.posterOnly === 'true') return false;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    const conn = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    if (conn?.saveData) return false;
+    if (conn?.effectiveType && /^(slow-2g|2g|3g)$/.test(conn.effectiveType)) {
+      return false;
+    }
+    return true;
+  }
+
+  function startVideo(bg: Bg): void {
+    if (bg._videobgInited) return;
+    bg._videobgInited = true;
+    if (!shouldPlay(bg)) return;
+
+    const video = bg.querySelector<HTMLVideoElement>('[data-videobg-video]');
+    if (!video) return;
+
+    const webmUrl = video.dataset.srcWebm;
+    const mp4Url = video.dataset.srcMp4;
+    if (!webmUrl && !mp4Url) return;
+
+    if (webmUrl) {
+      const sw = document.createElement('source');
+      sw.src = webmUrl;
+      sw.type = 'video/webm';
+      video.appendChild(sw);
+    }
+    if (mp4Url) {
+      const sm = document.createElement('source');
+      sm.src = mp4Url;
+      sm.type = 'video/mp4';
+      video.appendChild(sm);
+    }
+
+    video.preload = 'metadata';
+    video.load();
+
+    video.addEventListener(
+      'canplay',
+      () => {
+        const p = video.play();
+        if (p && typeof p.catch === 'function') {
+          p.catch(() => {
+            // autoplay bloccato (es. iOS low-power): resta il poster
+          });
+        }
+      },
+      { once: true },
+    );
+    video.addEventListener(
+      'playing',
+      () => {
+        video.style.opacity = '1';
+      },
+      { once: true },
+    );
+  }
+
+  function init(): void {
+    const bgs = document.querySelectorAll<Bg>('[data-videobg]');
+    if (!bgs.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            startVideo(e.target as Bg);
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { rootMargin: '25%' },
+    );
+    bgs.forEach((b) => io.observe(b));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  document.addEventListener('astro:page-load', init);
+</script>

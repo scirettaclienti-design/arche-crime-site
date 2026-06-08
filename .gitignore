@@ -30,3 +30,8 @@ Thumbs.db
 !.vscode/extensions.json
 !.vscode/settings.json
 .idea/
+
+# Raw video sources (NON commit, NON serve in repo)
+# I file ottimizzati vivono in public/video/ e sono committabili.
+src/assets/video-*-src.mp4
+src/assets/video-*-src.MP4
