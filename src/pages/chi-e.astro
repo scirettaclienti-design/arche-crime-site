@@ -7,25 +7,25 @@ export const prerender = true;
 
 const tratti = [
   {
-    n: '01',
+    n: 'I',
     titolo: 'Una doppia competenza',
     nota:
       'Archeologa e criminologa: due discipline che in Italia raramente si parlano e che Gabriella ha attraversato entrambe per intero. archè nasce dal punto preciso in cui si toccano.',
   },
   {
-    n: '02',
+    n: 'II',
     titolo: 'Un rigore forense',
     nota:
       'Anni di lavoro in contesti formali — perizie, consulenze, aule giudiziarie — insegnano una cosa difficile da fingere: parlare di crimine con la stessa cautela con cui si maneggia un atto.',
   },
   {
-    n: '03',
+    n: 'III',
     titolo: 'Una postura etica',
     nota:
       'Niente nome di vittima recente come gancio, niente diagnosi su persone reali, niente caso della settimana. archè è anche, e prima di tutto, una scelta di cosa non fare.',
   },
   {
-    n: '04',
+    n: 'IV',
     titolo: 'Una voce divulgativa',
     nota:
       'Il rigore non è un alibi per essere illeggibili. La voce di archè cerca chi ascolta — studenti, lettori curiosi, professionisti di altre discipline — e parla a tutti loro nella stessa stanza.',
@@ -68,7 +68,7 @@ const tratti = [
       <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
         I quattro tratti
       </p>
-      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+      <h2 data-vary class="font-display text-3xl leading-tight text-bone sm:text-4xl">
         Da dove viene la voce
       </h2>
     </header>
@@ -78,7 +78,7 @@ const tratti = [
         tratti.map((t) => (
           <li class="bg-ink-2 p-8 sm:p-10">
             <div class="flex items-baseline gap-6">
-              <span class="font-display text-3xl text-gold-bright">
+              <span class="font-secret text-4xl text-gold-bright">
                 {t.n}
               </span>
               <h3 class="font-display text-xl leading-tight text-bone sm:text-2xl">
@@ -100,7 +100,7 @@ const tratti = [
     <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
       Una nota importante
     </p>
-    <h2 class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
+    <h2 data-vary class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
       L'attività forense ha un'altra casa
     </h2>
     <div class="mt-8 space-y-6 font-serif text-lg leading-loose text-bone-dim">

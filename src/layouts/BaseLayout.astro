@@ -55,14 +55,23 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).toString() : undefined
 
     <meta name="generator" content={Astro.generator} />
 
+    {/* Favicon: rombo oro inline SVG, niente network. */}
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2314110C'/%3E%3Cpath d='M16 6 L26 16 L16 26 L6 16 Z' fill='%23C8A24E'/%3E%3C/svg%3E"
+    />
+
     <MotionHead />
   </head>
   <body class="bg-ink text-bone font-serif min-h-screen antialiased">
+    <a class="skip-link" href="#main">Vai al contenuto</a>
+
     <EpigraphFilter />
 
     <Nav />
 
-    <main class="relative z-10">
+    <main id="main" class="relative z-10">
       <slot />
     </main>
 

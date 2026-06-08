@@ -54,8 +54,9 @@ const porte = [
           ~3.0s da quel momento manifesto e nota chiusano l'atto */}
 
       <RevealText variant="fade" delay={0.2} class="mb-12">
-        <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
-          ἀρχή · origine
+        <p class="text-xs tracking-eyebrow text-gold-bright">
+          <span class="greek font-display text-base italic text-gold-bright">ἀρχή</span>
+          <span class="uppercase"> · origine</span>
         </p>
       </RevealText>
 
@@ -71,6 +72,7 @@ const porte = [
 
       <CurtainOpening delay={1.6} duration={1.4}>
         <h1
+          data-vary
           class="is-epigraph font-display text-5xl leading-tight text-bone sm:text-6xl md:text-7xl"
         >
           Dal mito<br />alla mente<span class="text-gold-bright">.</span>
@@ -126,7 +128,7 @@ const porte = [
       <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
         Le tre porte
       </p>
-      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+      <h2 data-vary class="font-display text-3xl leading-tight text-bone sm:text-4xl">
         Da dove si entra
       </h2>
       <p class="mt-6 font-serif text-base leading-loose text-bone-dim">
@@ -169,7 +171,7 @@ const porte = [
     <RevealText variant="fade">
       <Ornament size="sm" class="mb-6" />
       <p class="font-display italic text-base text-bone-faint sm:text-lg">
-        ἀρχή — l'origine, il principio, ciò da cui tutto discende.
+        <span class="greek">ἀρχή</span> — l'origine, il principio, ciò da cui tutto discende.
       </p>
     </RevealText>
   </section>

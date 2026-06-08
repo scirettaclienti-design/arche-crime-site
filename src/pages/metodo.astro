@@ -7,31 +7,31 @@ export const prerender = true;
 
 const cinqueMai = [
   {
-    n: '01',
+    n: 'I',
     titolo: 'Mai indagini ancora aperte.',
     nota:
       'archè non parla di processi in corso. Il rispetto del segreto investigativo non è cortesia: è la condizione che ci permette di pensare invece di reagire.',
   },
   {
-    n: '02',
+    n: 'II',
     titolo: 'Mai il nome di una vittima recente come gancio.',
     nota:
       'Il dolore fresco non è materia editoriale. archè racconta fenomeni, non casi singoli — e quando un caso entra in scena, è perché il tempo ne ha già fatto un archetipo.',
   },
   {
-    n: '03',
+    n: 'III',
     titolo: 'Mai il "caso della settimana".',
     nota:
       'Il calendario della cronaca detta i ritmi della reazione. archè ha un altro orologio: quello del teatro, della ricerca, dell\'archivio.',
   },
   {
-    n: '04',
+    n: 'IV',
     titolo: 'Mai diagnosi su persone reali.',
     nota:
       'Una categoria criminologica spiega un fenomeno, non firma una sentenza. La parola "narcisista" applicata a un imputato che tu non hai mai incontrato è cattiva clinica e peggior giornalismo.',
   },
   {
-    n: '05',
+    n: 'V',
     titolo: 'Mai sensazionalismo.',
     nota:
       'Niente musica drammatica sul colpo di scena, niente fotografia da scena del crimine, niente voce in falsetto. La gravità del tema chiede sobrietà — non spettacolo.',
@@ -53,8 +53,8 @@ const cinqueMai = [
     <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
       I · L'origine
     </p>
-    <h2 class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
-      ἀρχή — l'origine, il principio
+    <h2 data-vary class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
+      <span class="greek">ἀρχή</span> — l'origine, il principio
     </h2>
     <div class="mt-8 space-y-6 font-serif text-lg leading-loose text-bone-dim">
       <p>
@@ -77,7 +77,7 @@ const cinqueMai = [
     <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
       II · Il fossato
     </p>
-    <h2 class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
+    <h2 data-vary class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
       Archeologia <span class="font-display italic text-bone-dim">e</span> criminologia
     </h2>
     <div class="mt-8 space-y-6 font-serif text-lg leading-loose text-bone-dim">
@@ -102,7 +102,7 @@ const cinqueMai = [
     <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
       III · Il metodo nelle due direzioni
     </p>
-    <h2 class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
+    <h2 data-vary class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
       Dal mito al fenomeno. Dal caso alla matrice.
     </h2>
 
@@ -144,7 +144,7 @@ const cinqueMai = [
     <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
       IV · La disciplina
     </p>
-    <h2 class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
+    <h2 data-vary class="mt-4 font-display text-3xl leading-tight text-bone sm:text-4xl">
       I cinque <span class="font-display italic text-gold-bright">mai</span>
     </h2>
     <p class="mt-8 font-serif text-lg leading-loose text-bone-dim">
@@ -158,7 +158,7 @@ const cinqueMai = [
         cinqueMai.map((m) => (
           <li class="bg-ink-2 p-8 sm:p-10">
             <div class="flex items-baseline gap-6">
-              <span class="font-display text-2xl text-gold-bright sm:text-3xl">
+              <span class="font-secret text-3xl text-gold-bright sm:text-4xl">
                 {m.n}
               </span>
               <h3 class="font-display text-xl leading-tight text-bone sm:text-2xl">

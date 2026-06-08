@@ -131,13 +131,20 @@ const knotY = MOD_H / 2;
   ]}
   style={`--meander-length:${length};`}
 >
+  {/* Mask sweep: il path è sempre disegnato per intero. Una clip-path
+      sul wrapper rivela il meandro L→R (orizzontale) o T→B (verticale).
+      Questo evita l'effetto "frammenti disconnessi" che lo stroke-dashoffset
+      produceva su un pattern fatto di soli angoli a 90°. */}
   <svg
     viewBox={`0 0 ${vbWidth} ${vbHeight}`}
     width="100%"
     height="100%"
     preserveAspectRatio="xMidYMid meet"
     role="presentation"
-    class={isVertical ? 'h-full w-auto' : 'h-auto w-full max-w-3xl'}
+    class:list={[
+      'meander-sweep',
+      isVertical ? 'h-full w-auto' : 'h-auto w-full max-w-3xl',
+    ]}
   >
     <g transform={groupTransform}>
       <path
@@ -148,8 +155,7 @@ const knotY = MOD_H / 2;
         stroke-width={strokeWidth}
         stroke-linecap="square"
         stroke-linejoin="miter"
-        stroke-dasharray={length}
-        stroke-dashoffset="0"
+        stroke-dasharray="none"
         vector-effect="non-scaling-stroke"
       ></path>
       {

@@ -38,12 +38,18 @@
     -webkit-clip-path: inset(50% 0 50% 0);
   }
 
-  html.js-motion-pending [data-meander] path.meander-stroke {
-    stroke-dashoffset: var(--meander-length, 9999);
+  /* Meandro: il pre-hide chiude la maschera dal lato corretto.
+     Per orientation orizzontale (default): chiuso da destra.
+     Per orientation verticale: chiuso dall'alto.
+     Il JS apre la maschera con tween. */
+  html.js-motion-pending [data-meander] svg.meander-sweep {
+    clip-path: inset(0 100% 0 0);
+    -webkit-clip-path: inset(0 100% 0 0);
   }
-
-  /* Ornament/static elements next to the meander get a touch of fade
-     so the apparition is coordinated. */
+  html.js-motion-pending [data-meander][data-orientation='vertical'] svg.meander-sweep {
+    clip-path: inset(100% 0 0 0);
+    -webkit-clip-path: inset(100% 0 0 0);
+  }
   html.js-motion-pending [data-meander] .meander-knot {
     opacity: 0;
   }

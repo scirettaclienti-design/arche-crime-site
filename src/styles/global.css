@@ -12,4 +12,98 @@
 @layer base {
   html { scroll-behavior: smooth; }
   body { min-height: 100dvh; }
+
+  /* Accento secondario "ember" — introdotto per i momenti viscerali della
+     pagina-episodio (tappa decodifica criminologica). Vietato altrove se
+     non per: hover di link nel corpo testo lungo, knot del meandro nelle
+     pagine-episodio. È un rosso-bruciato lapideo, non un rosso cronaca. */
+  :root {
+    --color-ember: #8A3A1E;
+    --color-ember-glow: #B85B3A;
+    --line-ember: rgba(138, 58, 30, 0.28);
+  }
+}
+
+/* Greek polytonic fallback.
+   Bodoni Moda e Spectral del design system non contengono il blocco Greek
+   (U+0370–03FF), quindi `ἀρχή`, `ἀ`, `ή` rendono come .notdef quando sono
+   dentro un display title. Definiamo @font-face "virtuali" che mappano la
+   sola subrange greca a font di sistema con polytonic Greek decente.
+   La regola usa `local()` cascade: Athelas (macOS 11+), Didot (macOS),
+   GFS Didot (Linux), DejaVu Serif (Linux ubiquo). Niente network. */
+@font-face {
+  font-family: "Bodoni Moda";
+  src:
+    local("Athelas"),
+    local("Didot"),
+    local("GFS Didot"),
+    local("EB Garamond"),
+    local("DejaVu Serif");
+  unicode-range: U+0370-03FF, U+1F00-1FFF;
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bodoni Moda";
+  src:
+    local("Athelas Italic"),
+    local("Didot Italic"),
+    local("EB Garamond Italic"),
+    local("DejaVu Serif Italic");
+  unicode-range: U+0370-03FF, U+1F00-1FFF;
+  font-weight: 400 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Spectral";
+  src:
+    local("Athelas"),
+    local("Didot"),
+    local("EB Garamond"),
+    local("DejaVu Serif");
+  unicode-range: U+0370-03FF, U+1F00-1FFF;
+  font-weight: 300 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Utility: la classe .greek va sui span che contengono parole greche
+   dentro display titles. Disabilita uppercase (che storce diacritics)
+   e applica un letter-spacing leggermente più stretto, perché i font
+   greci di sistema (Athelas/Didot) hanno tracking diverso da Bodoni. */
+.greek {
+  font-feature-settings: "kern" 1, "liga" 1;
+  letter-spacing: -0.01em;
+  text-transform: none !important;
+}
+
+/* Focus-visible: gold ring elegante, sostituisce default browser.
+   Solo da tastiera (Tab), invisibile per il mouse. */
+:focus-visible {
+  outline: 2px solid var(--color-gold-bright);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Skip-to-content link: visibile al focus, nascosto altrimenti. */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transform: translateY(-110%);
+  padding: 0.75rem 1.25rem;
+  background: var(--color-gold);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: transform var(--dur-medium) var(--ease-out-quart);
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: none;
 }

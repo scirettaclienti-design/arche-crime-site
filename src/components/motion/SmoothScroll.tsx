@@ -77,8 +77,9 @@ function settleAll(): void {
     el.style.clipPath = 'none';
     setWebkitClipPath(el, 'none');
   });
-  document.querySelectorAll<SVGPathElement>('[data-meander] path.meander-stroke').forEach((p) => {
-    p.style.strokeDashoffset = '0';
+  document.querySelectorAll<SVGSVGElement>('[data-meander] svg.meander-sweep').forEach((svg) => {
+    svg.style.clipPath = 'none';
+    (svg.style as CSSStyleDeclaration & { webkitClipPath?: string }).webkitClipPath = 'none';
   });
   document.querySelectorAll<HTMLElement>('[data-meander] .meander-knot').forEach((el) => {
     el.style.opacity = '1';
@@ -189,25 +190,40 @@ async function initMotion(state: MotionState): Promise<void> {
   });
 
   // ── MEANDER: due modalità.
-  //   1. 'scroll' (default): stroke-dashoffset scrub allo scroll della sezione
-  //      → la linea si traccia mentre l'utente scende. Usato per i separatori.
-  //   2. 'arrival': la linea si traccia UNA volta al page-load come gesto di
-  //      apertura ("il filo che conduce al titolo"). Usato nell'hero.
+  //   1. 'scroll' (default): clip-path sweep allo scroll della sezione
+  //      → il meandro si rivela L→R mentre l'utente scende. Usato per i separatori.
+  //   2. 'arrival': sweep UNA volta al page-load come gesto di apertura
+  //      ("il filo che conduce al titolo"). Usato nell'hero.
+  //
+  // Implementazione cambiata da stroke-dashoffset → clip-path inset:
+  // il path è sempre disegnato per intero, ma il wrapper SVG ha una
+  // maschera che si apre. Su un pattern a 90° come la greca, dashoffset
+  // mid-way mostrava frammenti staccati; clip-path invece rivela un
+  // "fronte d'onda" continuo. Visivamente leggibile a tutti i fotogrammi.
   document.querySelectorAll<HTMLElement>('[data-meander]').forEach((wrapper) => {
-    const path = wrapper.querySelector<SVGPathElement>('path.meander-stroke');
+    const svg = wrapper.querySelector<SVGSVGElement>('svg.meander-sweep');
     const knot = wrapper.querySelector<SVGGElement>('.meander-knot');
-    if (!path) return;
-    const length = path.getTotalLength();
+    if (!svg) return;
+    const orientation = wrapper.dataset.orientation ?? 'horizontal';
     const entrance = wrapper.dataset.meanderEntrance ?? 'scroll';
 
-    gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
+    // Stato chiuso: clip-path tutto chiuso dal lato giusto.
+    // horizontal: inset(0 100% 0 0) — chiuso da destra
+    // vertical:   inset(100% 0 0 0) — chiuso dall'alto verso il basso
+    const closed = orientation === 'vertical'
+      ? 'inset(100% 0 0 0)'
+      : 'inset(0 100% 0 0)';
+    const open = 'inset(0 0 0 0)';
+
+    gsap.set(svg, { clipPath: closed, webkitClipPath: closed });
     if (knot) gsap.set(knot, { opacity: 0, scale: 0.6, transformOrigin: 'center center' });
 
     if (entrance === 'arrival') {
       const arrivalDelay = parseFloat(wrapper.dataset.arrivalDelay ?? '0.5');
       const arrivalDuration = parseFloat(wrapper.dataset.arrivalDuration ?? '1.2');
-      gsap.to(path, {
-        strokeDashoffset: 0,
+      gsap.to(svg, {
+        clipPath: open,
+        webkitClipPath: open,
         duration: arrivalDuration,
         delay: arrivalDelay,
         ease: 'power2.inOut',
@@ -223,8 +239,9 @@ async function initMotion(state: MotionState): Promise<void> {
       }
     } else {
       const scrub = parseFloat(wrapper.dataset.scrub ?? '0.6');
-      gsap.to(path, {
-        strokeDashoffset: 0,
+      gsap.to(svg, {
+        clipPath: open,
+        webkitClipPath: open,
         ease: 'none',
         scrollTrigger: {
           trigger: wrapper,
@@ -247,6 +264,26 @@ async function initMotion(state: MotionState): Promise<void> {
         });
       }
     }
+  });
+
+  // ── VARIABLE BODONI AXIS: i titoli display con [data-vary] passano da
+  // wght:400 a wght:700 mentre attraversano il viewport. Sembra che il
+  // titolo "metta a fuoco" leggendolo. Pattern preso dal sito sibling.
+  document.querySelectorAll<HTMLElement>('[data-vary]').forEach((el) => {
+    gsap.fromTo(
+      el,
+      { fontVariationSettings: '"wght" 400' },
+      {
+        fontVariationSettings: '"wght" 700',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 80%',
+          end: 'top 25%',
+          scrub: 0.6,
+        },
+      },
+    );
   });
 
   // ── PARALLAX-Y: solo decorativo (hero-glow, accenti oro). Mai sul testo.

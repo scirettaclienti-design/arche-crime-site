@@ -12,9 +12,9 @@ const isActive = (href: string): boolean =>
   href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
 ---
 
-<header class="relative z-20 border-b border-[var(--line-soft)]">
+<header class="relative z-30 border-b border-[var(--line-soft)] bg-ink/80 backdrop-blur-sm">
   <nav
-    class="mx-auto flex max-w-wide flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6"
+    class="mx-auto flex max-w-wide items-center justify-between gap-6 px-4 py-5 sm:px-6"
     aria-label="Navigazione principale"
   >
     <a
@@ -23,7 +23,9 @@ const isActive = (href: string): boolean =>
     >
       archè<span class="text-gold-bright"> ◆</span>
     </a>
-    <ul class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs uppercase tracking-eyebrow text-bone-dim">
+
+    {/* Desktop: ≥ sm (640px+) — voci in linea */}
+    <ul class="hidden flex-wrap items-center gap-x-6 gap-y-2 text-xs uppercase tracking-eyebrow text-bone-dim sm:flex">
       {
         navLinks.map((link) => (
           <li>
@@ -41,5 +43,114 @@ const isActive = (href: string): boolean =>
         ))
       }
     </ul>
+
+    {/* Mobile: < sm — toggle hamburger */}
+    <button
+      id="nav-toggle"
+      type="button"
+      aria-label="Apri menu"
+      aria-expanded="false"
+      aria-controls="nav-mobile"
+      class="relative z-40 inline-flex h-10 w-10 items-center justify-center text-bone hover:text-gold-bright sm:hidden"
+    >
+      <span class="sr-only">Menu</span>
+      <svg
+        class="nav-icon-burger h-5 w-5"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <line x1="3" y1="6" x2="17" y2="6"></line>
+        <line x1="3" y1="14" x2="17" y2="14"></line>
+      </svg>
+      <svg
+        class="nav-icon-close hidden h-5 w-5"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="5" x2="15" y2="15"></line>
+        <line x1="15" y1="5" x2="5" y2="15"></line>
+      </svg>
+    </button>
   </nav>
+
+  {/* Mobile menu drawer — fullscreen sotto la nav */}
+  <div
+    id="nav-mobile"
+    class="nav-mobile fixed inset-x-0 top-[var(--nav-h,72px)] bottom-0 z-30 hidden bg-ink sm:hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Menu mobile"
+  >
+    <ul class="flex flex-col gap-px bg-[var(--line-soft)]">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              class:list={[
+                'block bg-ink px-6 py-5 font-display text-2xl text-bone transition-colors hover:bg-ink-2 hover:text-gold-bright',
+                isActive(link.href) && 'text-gold-bright',
+              ]}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
 </header>
+
+<script>
+  // Mobile nav toggle — vanilla, no framework needed.
+  const toggle = document.getElementById('nav-toggle');
+  const drawer = document.getElementById('nav-mobile');
+  const burger = toggle?.querySelector('.nav-icon-burger');
+  const close = toggle?.querySelector('.nav-icon-close');
+
+  function setOpen(open: boolean): void {
+    if (!toggle || !drawer || !burger || !close) return;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Chiudi menu' : 'Apri menu');
+    drawer.classList.toggle('hidden', !open);
+    burger.classList.toggle('hidden', open);
+    close.classList.toggle('hidden', !open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+
+  toggle?.addEventListener('click', () => {
+    const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+    setOpen(!isOpen);
+  });
+
+  // Chiudi al cambio route (link cliccato dentro al drawer)
+  drawer?.querySelectorAll('a').forEach((a) => {
+    a.addEventListener('click', () => setOpen(false));
+  });
+
+  // ESC chiude
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+    }
+  });
+
+  // Aggiorna --nav-h se la nav cambia altezza (es. logo wrap)
+  const nav = document.querySelector('header > nav');
+  if (nav) {
+    const setNavH = (): void => {
+      document.documentElement.style.setProperty('--nav-h', `${(nav as HTMLElement).offsetHeight + 1}px`);
+    };
+    setNavH();
+    window.addEventListener('resize', setNavH);
+  }
+</script>

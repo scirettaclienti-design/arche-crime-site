@@ -37,6 +37,12 @@ export default {
           bright: 'var(--color-gold-bright)',
           deep: 'var(--color-gold-deep)',
         },
+        // Accento secondario "brace" — solo per momenti viscerali della
+        // pagina-episodio. Non usare altrove, vedi nota in global.css.
+        ember: {
+          DEFAULT: 'var(--color-ember)',
+          glow: 'var(--color-ember-glow)',
+        },
       },
       fontFamily: {
         display: ['var(--font-display)'],
