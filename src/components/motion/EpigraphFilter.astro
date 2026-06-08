@@ -1,0 +1,76 @@
+---
+/**
+ * Filtro SVG "epigrafe": un displacement leggerissimo che dà ai grandi
+ * titoli display un margine di "scolpito nella pietra".
+ *
+ * DEFAULT: DISATTIVATO. Per applicarlo, aggiungi la classe `is-epigraph`
+ * a un elemento display. Il filtro è opt-in perché:
+ * - SVG filter su HTML può rendere in modo inconsistente su Safari mobile
+ *   (specialmente con font self-hosted variabili come Bodoni Moda).
+ * - Crea un nuovo contenente stacking context che può rompere alcuni
+ *   layout (clip-path interagiscono male con filter url()).
+ * - Se applicato a tutti i display, il rischio è di "sporcare" anziché
+ *   incidere.
+ *
+ * Per attivarlo selettivamente:
+ *   <h1 class="font-display is-epigraph">Dal mito alla mente</h1>
+ *
+ * Su mobile (≤640px) il filtro viene disabilitato automaticamente per
+ * conservare la chiarezza tipografica.
+ *
+ * NOTA: ho lasciato il filtro pronto ma NON l'ho applicato a nessun
+ * titolo di questo blocco. Va valutato visivamente — segnalo come
+ * deciso nel report finale.
+ */
+---
+
+<svg
+  aria-hidden="true"
+  focusable="false"
+  width="0"
+  height="0"
+  style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;"
+>
+  <defs>
+    <filter
+      id="arche-epigraph"
+      x="-2%"
+      y="-2%"
+      width="104%"
+      height="104%"
+      color-interpolation-filters="sRGB"
+    >
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="0.85"
+        numOctaves="2"
+        seed="3"
+        stitchTiles="stitch"
+        result="noise"
+      ></feTurbulence>
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="noise"
+        scale="0.9"
+        xChannelSelector="R"
+        yChannelSelector="G"
+      ></feDisplacementMap>
+    </filter>
+  </defs>
+</svg>
+
+<style is:inline>
+  .is-epigraph {
+    filter: url('#arche-epigraph');
+  }
+  @media (max-width: 640px) {
+    .is-epigraph {
+      filter: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .is-epigraph {
+      filter: none;
+    }
+  }
+</style>

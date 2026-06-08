@@ -1,0 +1,150 @@
+---
+/**
+ * Il MEANDRO greco — firma di archè.
+ *
+ * Genera geometricamente il pattern della greca (Greek key / fret),
+ * non un asset pre-disegnato. Stroke oro, fill none, sottile.
+ * Allo scroll si TRACCIA via stroke-dashoffset (scrub ScrollTrigger).
+ *
+ * Modulo unitario (12 × 6 unità SVG):
+ *
+ *   ┌─────────────┐
+ *   │             │
+ *   │  ┌───────┐  │
+ *   │  │       │  │
+ *   ┘  ┘       └  └───  baseline
+ *
+ *   Path D di un modulo che parte da (xs, 6) e finisce a (xs+12, 6):
+ *     L xs    0   (sale tutto)
+ *     L xs+12 0   (traversa in alto)
+ *     L xs+12 4   (scende a 4)
+ *     L xs+3  4   (torna a sinistra a 3)
+ *     L xs+3  2   (sale a 2)
+ *     L xs+9  2   (destra fino a 9)
+ *     L xs+9  6   (scende sulla baseline)
+ *     L xs+12 6   (raccordo orizzontale al modulo successivo)
+ *
+ *   Lunghezza per modulo (incluso raccordo): 46 unità SVG.
+ *
+ * Variante "vertical": ruoto l'intero g di 90° e scambio width/height
+ * del viewBox. Il filo scende invece di scorrere a lato.
+ *
+ * Il piccolo rombo ◆ "knot" può apparire al centro come punto di sutura
+ * tipografico (prop showKnot).
+ */
+
+interface Props {
+  /** Quanti moduli del meandro disegnare. Default 6, mobile-safe. */
+  modules?: number;
+  /** 'horizontal' (separatore tra sezioni) o 'vertical' (filo laterale). */
+  orientation?: 'horizontal' | 'vertical';
+  /** Mostra il rombo oro come knot centrale del meandro. */
+  showKnot?: boolean;
+  /** Velocità dello scrub: 0.6 = lento e setoso, 1 = istantaneo. */
+  scrub?: number;
+  /** Larghezza dello stroke in unità SVG (default 0.4, sottile). */
+  strokeWidth?: number;
+  /** Classi extra Tailwind per il wrapper. */
+  class?: string;
+  /** Tinta dello stroke (default var(--color-gold)). */
+  color?: string;
+}
+
+const {
+  modules = 6,
+  orientation = 'horizontal',
+  showKnot = true,
+  scrub = 0.6,
+  strokeWidth = 0.4,
+  class: className = '',
+  color = 'var(--color-gold)',
+} = Astro.props;
+
+const MOD_W = 12;
+const MOD_H = 6;
+const PER_MODULE_LEN = 46;
+
+// Costruisco la stringa "d" concatenando N moduli.
+const segments: string[] = [`M 0 ${MOD_H}`];
+for (let i = 0; i < modules; i += 1) {
+  const xs = i * MOD_W;
+  segments.push(`L ${xs} 0`);
+  segments.push(`L ${xs + MOD_W} 0`);
+  segments.push(`L ${xs + MOD_W} 4`);
+  segments.push(`L ${xs + 3} 4`);
+  segments.push(`L ${xs + 3} 2`);
+  segments.push(`L ${xs + 9} 2`);
+  segments.push(`L ${xs + 9} ${MOD_H}`);
+  if (i < modules - 1) {
+    segments.push(`L ${xs + MOD_W} ${MOD_H}`);
+  }
+}
+const d = segments.join(' ');
+
+// Lunghezza precalcolata (anche se JS poi userà getTotalLength() per
+// la precisione sub-pixel del browser).
+const length = PER_MODULE_LEN * modules - 3; // l'ultimo modulo non ha raccordo
+const totalW = modules * MOD_W;
+const padding = 1;
+
+// Per orientation verticale, scambio gli assi via transform sul gruppo.
+const isVertical = orientation === 'vertical';
+const vbWidth = isVertical ? MOD_H + padding * 2 : totalW + padding * 2;
+const vbHeight = isVertical ? totalW + padding * 2 : MOD_H + padding * 2;
+const groupTransform = isVertical
+  ? `translate(${padding + MOD_H} ${padding}) rotate(90)`
+  : `translate(${padding} ${padding})`;
+
+// Posizione del knot ◆ al centro geometrico del modulo centrale.
+const knotIndex = Math.floor(modules / 2);
+const knotX = knotIndex * MOD_W + MOD_W / 2;
+const knotY = MOD_H / 2;
+---
+
+<div
+  data-meander
+  data-orientation={orientation}
+  data-scrub={scrub}
+  aria-hidden="true"
+  class:list={[
+    'arche-meander pointer-events-none select-none',
+    isVertical ? 'inline-flex h-full justify-center' : 'flex w-full justify-center',
+    className,
+  ]}
+  style={`--meander-length:${length};`}
+>
+  <svg
+    viewBox={`0 0 ${vbWidth} ${vbHeight}`}
+    width="100%"
+    height="100%"
+    preserveAspectRatio="xMidYMid meet"
+    role="presentation"
+    class={isVertical ? 'h-full w-auto' : 'h-auto w-full max-w-3xl'}
+  >
+    <g transform={groupTransform}>
+      <path
+        class="meander-stroke"
+        d={d}
+        fill="none"
+        stroke={color}
+        stroke-width={strokeWidth}
+        stroke-linecap="square"
+        stroke-linejoin="miter"
+        stroke-dasharray={length}
+        stroke-dashoffset="0"
+        vector-effect="non-scaling-stroke"
+      ></path>
+      {
+        showKnot && (
+          <g class="meander-knot" transform={`translate(${knotX} ${knotY})`}>
+            <path
+              d="M 0 -1.6 L 1.6 0 L 0 1.6 L -1.6 0 Z"
+              fill={color}
+              opacity="0.95"
+            />
+          </g>
+        )
+      }
+    </g>
+  </svg>
+</div>

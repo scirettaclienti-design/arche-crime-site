@@ -1,0 +1,40 @@
+---
+/**
+ * Sipario d'apertura — il gesto della soglia archè.
+ *
+ * Implementazione: clip-path inset(50% 0 50% 0) → inset(0 0 0 0).
+ * Il contenuto parte invisibile, schiacciato a una linea orizzontale
+ * centrale, e si apre simmetricamente verso l'alto e il basso. Sensazione
+ * di sipario che si scosta lentamente. Durata ~1.4s, ease 'power3.inOut'.
+ *
+ * Gioca UNA volta all'ingresso (sessionStorage flag opzionale, gestito
+ * dall'island in modo che ricaricare la home faccia rivedere il gesto
+ * solo se sono passati >30 min — vedi commento in SmoothScroll).
+ *
+ * Reduced-motion: nessun clip-path applicato, contenuto subito visibile.
+ */
+
+interface Props {
+  /** Ritardo dopo il page-load prima che il sipario si apra. */
+  delay?: number;
+  /** Classi extra. */
+  class?: string;
+  /** Durata in secondi del gesto. */
+  duration?: number;
+}
+
+const {
+  delay = 0.35,
+  duration = 1.4,
+  class: className = '',
+} = Astro.props;
+---
+
+<div
+  data-curtain
+  data-curtain-delay={delay}
+  data-curtain-duration={duration}
+  class={`arche-curtain ${className}`}
+>
+  <slot />
+</div>

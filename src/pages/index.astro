@@ -2,6 +2,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EpisodeCard from '../components/EpisodeCard.astro';
 import Ornament from '../components/Ornament.astro';
+import GreekMeander from '../components/motion/GreekMeander.astro';
+import RevealText from '../components/motion/RevealText.astro';
+import CurtainOpening from '../components/motion/CurtainOpening.astro';
 
 export const prerender = true;
 
@@ -33,36 +36,61 @@ const porte = [
 <BaseLayout
   description="archè — dal mito alla mente. Una piattaforma editoriale di Gabriella Marano: criminologia letta attraverso il mito greco, senza cronaca nera."
 >
-  <section class="mx-auto max-w-text px-6 pt-24 pb-16 text-center sm:pt-32 sm:pb-20">
-    <p class="mb-8 text-xs uppercase tracking-eyebrow text-gold-bright">
-      ἀρχή · origine
-    </p>
-    <h1 class="font-display text-5xl leading-tight text-bone sm:text-6xl md:text-7xl">
-      Dal mito<br />alla mente<span class="text-gold-bright">.</span>
-    </h1>
-    <Ornament class="mt-16" size="lg" />
-    <p class="mt-16 font-serif text-lg leading-loose text-bone-dim sm:text-xl">
-      archè è la piattaforma editoriale di Gabriella Marano. Una lettura
-      criminologica dei fenomeni umani che parte dal teatro greco — perché
-      le storie che ci raccontiamo da duemilacinquecento anni dicono molto
-      più della cronaca di ieri.
-    </p>
-    <p class="mt-6 font-display italic text-lg text-bone sm:text-xl">
-      Non cronaca nera. Un metodo.
-    </p>
+  <section class="relative overflow-hidden">
+    {/* Hero-glow oro: parallax misurato, decorativo, mai sul testo */}
+    <div
+      aria-hidden="true"
+      data-parallax-y="40"
+      class="pointer-events-none absolute -top-32 left-1/2 -z-10 h-[60vh] w-[80vw] -translate-x-1/2 opacity-60"
+      style="background: radial-gradient(closest-side, var(--color-gold-deep) 0%, transparent 70%); mix-blend-mode: screen; filter: blur(40px);"
+    >
+    </div>
+
+    <div class="mx-auto max-w-text px-6 pt-24 pb-16 text-center sm:pt-32 sm:pb-20">
+      <RevealText variant="fade" delay={0.2} class="mb-8">
+        <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+          ἀρχή · origine
+        </p>
+      </RevealText>
+
+      <CurtainOpening delay={0.4} duration={1.5}>
+        <h1 class="font-display text-5xl leading-tight text-bone sm:text-6xl md:text-7xl">
+          Dal mito<br />alla mente<span class="text-gold-bright">.</span>
+        </h1>
+      </CurtainOpening>
+
+      <div class="mt-16">
+        <GreekMeander modules={5} scrub={0.4} class="mx-auto max-w-md opacity-90" />
+      </div>
+
+      <RevealText variant="fade" delay={0.1} class="mt-16">
+        <p class="font-serif text-lg leading-loose text-bone-dim sm:text-xl">
+          archè è la piattaforma editoriale di Gabriella Marano. Una lettura
+          criminologica dei fenomeni umani che parte dal teatro greco — perché
+          le storie che ci raccontiamo da duemilacinquecento anni dicono molto
+          più della cronaca di ieri.
+        </p>
+      </RevealText>
+
+      <RevealText variant="fade" delay={0.3} class="mt-6">
+        <p class="font-display italic text-lg text-bone sm:text-xl">
+          Non cronaca nera. Un metodo.
+        </p>
+      </RevealText>
+    </div>
   </section>
 
   <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
-    <header class="mx-auto max-w-text text-center">
+    <RevealText variant="fade" class="mx-auto max-w-text text-center">
       <p class="mb-4 text-xs uppercase tracking-eyebrow text-gold-bright">
         Ultimo episodio
       </p>
       <h2 class="font-display text-2xl leading-tight text-bone sm:text-3xl">
         In apertura: Medea
       </h2>
-    </header>
+    </RevealText>
 
-    <div class="mx-auto mt-12 max-w-3xl">
+    <RevealText variant="fade" delay={0.15} class="mx-auto mt-12 block max-w-3xl">
       <EpisodeCard
         variant="feature"
         numero={1}
@@ -74,13 +102,13 @@ const porte = [
         durata="32 min"
         estratto="Prima di essere cronaca, è tragedia. Prima di essere diagnosi, è scena. Apriamo il sipario su una donna che il mito ha già condannato: e proviamo a leggere ciò che la cronaca, da sola, non riuscirebbe mai a spiegare."
       />
-    </div>
+    </RevealText>
   </section>
 
-  <Ornament class="my-12" />
+  <GreekMeander modules={6} scrub={0.6} class="my-16 px-6 opacity-80" />
 
   <section class="mx-auto max-w-wide px-6 py-20 sm:py-24">
-    <header class="mx-auto max-w-text text-center">
+    <RevealText variant="fade" class="mx-auto max-w-text text-center">
       <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
         Le tre porte
       </p>
@@ -90,32 +118,45 @@ const porte = [
       <p class="mt-6 font-serif text-base leading-loose text-bone-dim">
         archè non è un canale, è una soglia. Tre modi diversi di attraversarla.
       </p>
-    </header>
+    </RevealText>
 
     <ul class="mt-16 grid grid-cols-1 gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] md:grid-cols-3">
       {
-        porte.map((porta) => (
+        porte.map((porta, i) => (
           <li class="bg-ink-2">
-            <a
-              href={porta.href}
-              class="group block h-full p-8 transition-colors duration-medium ease-out-quart hover:bg-ink-3 sm:p-10"
-            >
-              <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
-                {porta.eyebrow}
-              </p>
-              <h3 class="mt-4 font-display text-2xl leading-tight text-bone transition-colors group-hover:text-gold-bright sm:text-3xl">
-                {porta.titolo}
-              </h3>
-              <p class="mt-5 font-serif text-base leading-loose text-bone-dim">
-                {porta.descrizione}
-              </p>
-              <p class="mt-8 text-xs uppercase tracking-eyebrow text-gold-bright transition-colors group-hover:text-bone">
-                Entra →
-              </p>
-            </a>
+            <RevealText variant="fade" delay={0.1 * i} class="block h-full">
+              <a
+                href={porta.href}
+                class="group block h-full p-8 transition-colors duration-medium ease-out-quart hover:bg-ink-3 sm:p-10"
+              >
+                <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+                  {porta.eyebrow}
+                </p>
+                <h3 class="mt-4 font-display text-2xl leading-tight text-bone transition-colors group-hover:text-gold-bright sm:text-3xl">
+                  {porta.titolo}
+                </h3>
+                <p class="mt-5 font-serif text-base leading-loose text-bone-dim">
+                  {porta.descrizione}
+                </p>
+                <p class="mt-8 text-xs uppercase tracking-eyebrow text-gold-bright transition-colors group-hover:text-bone">
+                  Entra →
+                </p>
+              </a>
+            </RevealText>
           </li>
         ))
       }
     </ul>
+  </section>
+
+  <GreekMeander modules={4} scrub={0.7} class="my-12 px-6 opacity-70" showKnot={true} />
+
+  <section class="mx-auto max-w-text px-6 pb-24 text-center">
+    <RevealText variant="fade">
+      <Ornament size="sm" class="mb-6" />
+      <p class="font-display italic text-base text-bone-faint sm:text-lg">
+        ἀρχή — l'origine, il principio, ciò da cui tutto discende.
+      </p>
+    </RevealText>
   </section>
 </BaseLayout>

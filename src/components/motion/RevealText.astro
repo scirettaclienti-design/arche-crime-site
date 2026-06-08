@@ -1,0 +1,52 @@
+---
+/**
+ * Reveal di blocchi tipografici al rientro nel viewport.
+ *
+ * Due varianti:
+ * - 'fade' (default): traslazione verticale lieve + fade. Usato per
+ *   blocchi di testo corrente, eyebrow, paragrafi.
+ * - 'clip': maschera clip-path inset che si apre dal basso + leggero
+ *   blur che si dissolve + tracking che si stringe. Usato per i titoli
+ *   display: il testo emerge "inciso", non appare.
+ *
+ * Markup statico + data-attribute. Lo SmoothScroll island lo trova
+ * via querySelectorAll('[data-reveal]') e lo anima al primo passaggio
+ * con ScrollTrigger once:true.
+ *
+ * Pre-hide via .js-motion-pending CSS — se JS non parte (o reduced-motion),
+ * il contenuto resta perfettamente visibile e leggibile.
+ */
+
+type AsTag = 'div' | 'h1' | 'h2' | 'h3' | 'p' | 'span' | 'section' | 'header';
+
+interface Props {
+  /** Variante della maschera. */
+  variant?: 'fade' | 'clip';
+  /** Tag HTML del wrapper (default div). */
+  as?: AsTag;
+  /** Ritardo in secondi rispetto all'ingresso nel viewport. */
+  delay?: number;
+  /** Classi extra. */
+  class?: string;
+  /** Trigger soglia (% del viewport in cui l'elemento si attiva). */
+  start?: string;
+}
+
+const {
+  variant = 'fade',
+  as: Tag = 'div',
+  delay = 0,
+  class: className = '',
+  start = 'top 85%',
+}: Props = Astro.props;
+---
+
+<Tag
+  data-reveal
+  data-reveal-variant={variant}
+  data-reveal-delay={delay}
+  data-reveal-start={start}
+  class={className}
+>
+  <slot />
+</Tag>

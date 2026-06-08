@@ -2,6 +2,9 @@
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import MotionHead from '../components/motion/MotionHead.astro';
+import EpigraphFilter from '../components/motion/EpigraphFilter.astro';
+import SmoothScroll from '../components/motion/SmoothScroll';
 
 interface Props {
   title?: string;
@@ -51,8 +54,12 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).toString() : undefined
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
 
     <meta name="generator" content={Astro.generator} />
+
+    <MotionHead />
   </head>
   <body class="bg-ink text-bone font-serif min-h-screen antialiased">
+    <EpigraphFilter />
+
     <Nav />
 
     <main class="relative z-10">
@@ -60,5 +67,7 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).toString() : undefined
     </main>
 
     <Footer />
+
+    <SmoothScroll client:load />
   </body>
 </html>

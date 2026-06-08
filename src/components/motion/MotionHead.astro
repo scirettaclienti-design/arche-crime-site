@@ -1,0 +1,75 @@
+---
+/**
+ * Pre-hide CSS + safety fallback per il movimento.
+ *
+ * Pattern: una classe `js-motion-pending` viene settata su <html> da uno
+ * script inline PRIMA del paint. Il CSS pre-hide nasconde gli elementi
+ * destinati ad animarsi. Quando il React island di motion monta, cancella
+ * il safety timer e rimuove la classe gradualmente. Se JS non parte mai
+ * (errore di rete, blocca-script), il safety timer scatta dopo 1.6s e
+ * rivela tutto: il contenuto resta sempre leggibile.
+ *
+ * prefers-reduced-motion: lo script salta TUTTO. La classe non viene mai
+ * aggiunta, il pre-hide non si applica, tutto è visibile al primo paint.
+ */
+---
+
+<style is:inline>
+  /* Pre-hide: si applica SOLO quando js-motion-pending è attivo.
+     A reduced-motion la classe non viene mai settata → nessun pre-hide. */
+
+  html.js-motion-pending [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 1.5rem, 0);
+    will-change: transform, opacity;
+  }
+
+  html.js-motion-pending [data-reveal][data-reveal-variant='clip'] {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 100% 0);
+    -webkit-clip-path: inset(0 0 100% 0);
+    filter: blur(6px);
+    letter-spacing: 0.03em;
+  }
+
+  html.js-motion-pending [data-curtain] {
+    clip-path: inset(50% 0 50% 0);
+    -webkit-clip-path: inset(50% 0 50% 0);
+  }
+
+  html.js-motion-pending [data-meander] path.meander-stroke {
+    stroke-dashoffset: var(--meander-length, 9999);
+  }
+
+  /* Ornament/static elements next to the meander get a touch of fade
+     so the apparition is coordinated. */
+  html.js-motion-pending [data-meander] .meander-knot {
+    opacity: 0;
+  }
+
+  /* Aspect: parallax targets are NOT pre-hidden (they're decorative,
+     not content). The transform is set live by JS. */
+</style>
+
+<script is:inline>
+  // Inline, head-of-document. Runs before any paint.
+  // Reduced motion → do nothing, everything stays at final state.
+  (function () {
+    var doc = document.documentElement;
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reduced.matches) return;
+
+    doc.classList.add('js-motion-pending');
+
+    // Safety: if the motion island never mounts (script error, ad-blocker,
+    // very slow CPU), reveal everything after 1.6s. The content is the
+    // contract; the motion is bonus.
+    var safety = window.setTimeout(function () {
+      doc.classList.remove('js-motion-pending');
+    }, 1600);
+
+    // The motion island reads this and clears it on mount.
+    window.__archeMotionSafety = safety;
+  })();
+</script>
