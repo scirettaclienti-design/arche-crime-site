@@ -1,0 +1,98 @@
+---
+/**
+ * ArchetypeConstellation.astro — Astro server wrapper.
+ *
+ * Fetcha la collection 'episodi' lato build, costruisce la mappa
+ * mito → episodio pubblicato, e passa al React island i 5 archetipi.
+ *
+ * Pattern: il dato (5 archetipi + linking) viene calcolato al build (SSG);
+ * il componente React riceve dati già preparati e fa SOLO interattività.
+ * Niente fetch client, niente waterfall.
+ */
+
+import { getCollection } from 'astro:content';
+import ArchetypeConstellation from './ArchetypeConstellation';
+import type { ArchetypeNode } from './ArchetypeConstellation';
+
+interface Props {
+  title?: string;
+  eyebrow?: string;
+}
+
+const { title, eyebrow } = Astro.props;
+
+// I 5 archetipi — gli stessi dati del MythMatrix legacy (non cambiare:
+// sono il contenuto canonico del brand).
+const baseData: Array<Omit<ArchetypeNode, 'episodeSlug'>> = [
+  {
+    slug: 'medea',
+    nome: 'Medea',
+    fonte: 'Euripide',
+    chiave: 'Il figlicidio',
+    nota: "Quando l'amore tradito diventa annientamento.",
+  },
+  {
+    slug: 'elettra',
+    nome: 'Elettra',
+    fonte: 'Sofocle',
+    chiave: 'Il trauma familiare',
+    nota: 'La casa come scena del crimine ereditata.',
+  },
+  {
+    slug: 'aiace',
+    nome: 'Aiace',
+    fonte: 'Sofocle',
+    chiave: 'Il crollo',
+    nota: "Quando l'identità eroica non regge la perdita.",
+  },
+  {
+    slug: 'eracle',
+    nome: 'Eracle',
+    fonte: 'Euripide',
+    chiave: 'La perdita di controllo',
+    nota: 'La forza che si rivolta contro chi si dovrebbe proteggere.',
+  },
+  {
+    slug: 'troiane',
+    nome: 'Le Troiane',
+    fonte: 'Euripide',
+    chiave: 'La vittimizzazione',
+    nota: 'Le voci che la storia mette in secondo piano.',
+  },
+];
+
+// Costruisce la mappa mito → episodio pubblicato.
+// Se la collection è vuota o nessun episodio è pubblicato, la mappa è vuota.
+let episodiPubblicati: Awaited<ReturnType<typeof getCollection>> = [];
+try {
+  episodiPubblicati = await getCollection('episodi', ({ data }: { data: { pubblicato: boolean } }) => data.pubblicato);
+} catch {
+  // Collection vuota o non ancora popolata. Nessun episodio → tutti i nodi
+  // restano in stato "in arrivo".
+  episodiPubblicati = [];
+}
+
+const mitoToEpisodeSlug = new Map<string, string>();
+for (const ep of episodiPubblicati) {
+  const d = ep.data as { mito?: string; slug?: string };
+  if (d.mito && d.slug) {
+    mitoToEpisodeSlug.set(d.mito, d.slug);
+  }
+}
+
+const archetypes: ArchetypeNode[] = baseData.map((b) => ({
+  ...b,
+  episodeSlug: mitoToEpisodeSlug.get(b.slug),
+}));
+---
+
+{/* React island con SSR (client:visible): il primo paint mostra HTML
+    statico con i 5 archetipi al loro posto. JS subentra all'arrivo nel
+    viewport per accendere stagger entry, hover/focus, e il tracciamento
+    del meandro. */}
+<ArchetypeConstellation
+  client:visible
+  archetypes={archetypes}
+  title={title}
+  eyebrow={eyebrow}
+/>
