@@ -13,11 +13,21 @@
   html { scroll-behavior: smooth; }
   body { min-height: 100dvh; }
 
-  /* Accento secondario "ember" — introdotto per i momenti viscerali della
-     pagina-episodio (tappa decodifica criminologica). Vietato altrove se
-     non per: hover di link nel corpo testo lungo, knot del meandro nelle
-     pagine-episodio. È un rosso-bruciato lapideo, non un rosso cronaca. */
+  /* Accenti secondari archè · inchiostro — tutti in registro museo,
+     usati con misura per rompere il monocromatismo ink+bone+gold senza
+     uscire dalla palette. */
   :root {
+    /* PATINA — verdi di bronzo ossidato: la pelle dei reperti, il
+       colore-rame delle statue all'aperto. Freddo, contrastante col
+       caldo di gold senza essere alieno alla regia.
+       Usato per: hover di link nel corpo testo, knot decorativi quando
+       lo stesso lay-out già usa oro, separatori sottili. */
+    --color-patina: #5E7868;
+    --color-patina-bright: #8AA38F;
+    --color-patina-deep: #3F574B;
+
+    /* EMBER — rosso-bruciato lapideo, NON cronaca. Riservato ai
+       momenti viscerali della pagina-episodio (tappa decodifica). */
     --color-ember: #8A3A1E;
     --color-ember-glow: #B85B3A;
     --line-ember: rgba(138, 58, 30, 0.28);
@@ -79,12 +89,53 @@
   text-transform: none !important;
 }
 
+/* Link nel corpo testo: hover passa a patina invece che a bone. Aggiunge
+   un'inflessione fredda dentro pagine altrimenti calde. Applicato a link
+   in body editorial — escluso da nav/footer (che restano gold→bone). */
+.prose-arche a,
+section p a,
+[data-incise] a,
+[data-portrait] a {
+  color: var(--color-gold-bright);
+  text-decoration-color: var(--color-patina);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color var(--dur-medium) var(--ease-out-quart);
+}
+.prose-arche a:hover,
+section p a:hover,
+[data-incise] a:hover,
+[data-portrait] a:hover {
+  color: var(--color-patina-bright);
+}
+
 /* Focus-visible: gold ring elegante, sostituisce default browser.
    Solo da tastiera (Tab), invisibile per il mouse. */
 :focus-visible {
   outline: 2px solid var(--color-gold-bright);
   outline-offset: 3px;
   border-radius: 2px;
+}
+
+/* Hero pin a reduced-motion: niente sticky, niente sezione 260vh,
+   gli stage si impilano in flow normale uno sotto l'altro a viewport piena. */
+@media (prefers-reduced-motion: reduce) {
+  [data-hero-pin] {
+    height: auto !important;
+  }
+  [data-hero-sticky] {
+    position: static !important;
+    height: auto !important;
+    display: block !important;
+  }
+  [data-hero-stage] {
+    position: relative !important;
+    inset: auto !important;
+    opacity: 1 !important;
+    min-height: 80vh;
+    padding: 4rem 0;
+  }
+  [data-hero-scroll-hint] { display: none !important; }
 }
 
 /* Skip-to-content link: visibile al focus, nascosto altrimenti. */

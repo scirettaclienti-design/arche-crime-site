@@ -39,6 +39,12 @@ interface Props {
   overlayOpacity?: number;
   /** Direzione del gradient del velo (default top-to-bottom). */
   overlayDirection?: 'to bottom' | 'to top' | 'radial';
+  /** object-position per video+poster. Default 'center center'.
+   * Esempio: 'center 25%' alza il soggetto, lo fa sbordare giù; utile per
+   * spostare la lucerna sotto il manifesto. Mobile può richiedere valore diverso. */
+  objectPosition?: string;
+  /** object-position SPECIFICO mobile (<640px). Se omesso usa objectPosition. */
+  objectPositionMobile?: string;
   /** Attiva parallax scroll. Vedi handler in SmoothScroll.tsx. */
   parallax?: boolean;
   /** Intensità parallax in px (desktop). Mobile: dimezzato. Default 60. */
@@ -55,12 +61,18 @@ const {
   name,
   overlayOpacity = 0.6,
   overlayDirection = 'to bottom',
+  objectPosition = 'center center',
+  objectPositionMobile,
   parallax = false,
   parallaxAmount = 60,
   ariaLabel,
   posterOnly = false,
   class: className = '',
 } = Astro.props as Props;
+
+const mobileObjPos = objectPositionMobile ?? objectPosition;
+// CSS var locale al wrapper; un piccolo @media inline cambia tra desktop e mobile.
+const objPosVarStyle = `--obj-pos:${objectPosition}; --obj-pos-mobile:${mobileObjPos};`;
 
 const webm = `/video/${name}.webm`;
 const mp4 = `/video/${name}.mp4`;
@@ -80,6 +92,7 @@ const overlayBg =
   data-videobg
   data-poster-only={posterOnly ? 'true' : 'false'}
   aria-hidden="true"
+  style={objPosVarStyle}
 >
   {/* Strato 1: video / poster. Inizio già scale-1.1 per dare margine al parallax. */}
   <div
@@ -94,7 +107,8 @@ const overlayBg =
       alt={ariaLabel ?? ''}
       loading="eager"
       decoding="async"
-      class="h-full w-full object-cover object-center"
+      class="arche-videobg-media h-full w-full object-cover"
+      style="object-position: var(--obj-pos, center center);"
       data-videobg-poster
     />
 
@@ -102,7 +116,8 @@ const overlayBg =
         di playback (no reduced-motion, no saveData, viewport, ecc.) sono OK.
         Pattern progressive enhancement: niente JS → niente video, contenuto integro. */}
     <video
-      class="absolute inset-0 h-full w-full object-cover object-center opacity-0 transition-opacity duration-700"
+      class="arche-videobg-media absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
+      style="object-position: var(--obj-pos, center center);"
       data-videobg-video
       data-src-webm={webm}
       data-src-mp4={mp4}
@@ -131,6 +146,16 @@ const overlayBg =
   >
   </div>
 </div>
+
+<style is:inline>
+  /* Override del var --obj-pos su mobile: usa --obj-pos-mobile se definito.
+     Cascade-based — niente JS. */
+  @media (max-width: 640px) {
+    .arche-videobg .arche-videobg-media {
+      object-position: var(--obj-pos-mobile, var(--obj-pos, center center)) !important;
+    }
+  }
+</style>
 
 <script>
   /**

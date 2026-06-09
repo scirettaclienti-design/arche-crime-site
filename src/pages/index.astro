@@ -37,86 +37,109 @@ const porte = [
 <BaseLayout
   description="archè — dal mito alla mente. Una piattaforma editoriale di Gabriella Marano: criminologia letta attraverso il mito greco, senza cronaca nera."
 >
-  <section class="relative overflow-hidden">
-    {/* SFONDO video: lucerna che si accende, dietro a tutto il testo dell'hero.
-        Velo ink 0.6 garantisce la leggibilità di "Dal mito alla mente" anche
-        quando la fiamma è al massimo. Parallax cinematico ma misurato (60px
-        desktop, 30 mobile). L'animazione d'arrivo (sipario+meandro+manifesto)
-        resta sopra il video, intatta. */}
-    <VideoBackground
-      name="hero"
-      overlayOpacity={0.62}
-      overlayDirection="to bottom"
-      parallax={true}
-      parallaxAmount={60}
-      ariaLabel="Sfondo: una lucerna a olio si accende lentamente nel buio di un tempio greco"
-    />
-
-    {/* Hero-glow oro: parallax misurato, decorativo, mai sul testo.
-        Rinforza la fiamma del video sotto, sopra il velo. */}
+  {/* HERO PIN — solo soglia.
+      Outer 140vh (desktop) / 130vh (mobile): un pin breve che fa "respirare"
+      il video pieno schermo per ~1.4 viewport prima di rilasciare. Niente
+      crossfade di testi sopra il video: il video tiene SOLO la soglia
+      (ἀρχή + meandro + h1). Manifesto e closing escono dopo il pin come
+      momenti di SOLO TESTO, con respiro. */}
+  <section
+    data-hero-pin
+    class="relative h-[130vh] overflow-visible sm:h-[140vh]"
+  >
     <div
-      aria-hidden="true"
-      data-parallax-y="40"
-      class="pointer-events-none absolute left-1/2 top-[10vh] -z-[5] h-[55vh] w-[55vh] -translate-x-1/2 opacity-70"
-      style="background: radial-gradient(circle, var(--color-gold-deep) 0%, transparent 65%); mix-blend-mode: screen; filter: blur(60px);"
+      data-hero-sticky
+      class="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden"
     >
-    </div>
-    <div
-      aria-hidden="true"
-      data-parallax-y="30"
-      class="pointer-events-none absolute left-1/2 top-[18vh] -z-[5] h-[30vh] w-[30vh] -translate-x-1/2 opacity-60"
-      style="background: radial-gradient(circle, var(--color-gold-bright) 0%, transparent 60%); mix-blend-mode: screen; filter: blur(80px);"
-    >
-    </div>
+      <VideoBackground
+        name="hero"
+        overlayOpacity={0.7}
+        overlayDirection="radial"
+        objectPosition="center 22%"
+        objectPositionMobile="center 18%"
+        parallax={true}
+        parallaxAmount={40}
+        ariaLabel="Sfondo: una lucerna a olio si accende lentamente nel buio di un tempio greco"
+      />
 
-    <div class="mx-auto max-w-text px-6 pt-24 pb-16 text-center sm:pt-32 sm:pb-20">
-      {/* Tempo d'entrata in hero (la "soglia"):
-          0.2s  eyebrow ἀρχή · origine appare
-          0.6s  il MEANDRO traccia per primo (1.2s, ease in-out)
-          1.6s  il sipario si apre sull'h1 (1.4s)
-          ~3.0s da quel momento manifesto e nota chiusano l'atto */}
-
-      <RevealText variant="fade" delay={0.2} class="mb-12">
-        <p class="text-xs tracking-eyebrow text-gold-bright">
-          <span class="greek font-display text-base italic text-gold-bright">ἀρχή</span>
-          <span class="uppercase"> · origine</span>
-        </p>
-      </RevealText>
-
-      <div class="mb-12">
-        <GreekMeander
-          modules={5}
-          entrance="arrival"
-          arrivalDelay={0.6}
-          arrivalDuration={1.2}
-          class="mx-auto max-w-md opacity-90"
-        />
+      {/* Doppio hero-glow oro (rinforza la fiamma) */}
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute left-1/2 top-[20vh] -z-[5] h-[40vh] w-[40vh] -translate-x-1/2 opacity-60"
+        style="background: radial-gradient(circle, var(--color-gold-deep) 0%, transparent 65%); mix-blend-mode: screen; filter: blur(60px);"
+      >
+      </div>
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute left-1/2 top-[28vh] -z-[5] h-[25vh] w-[25vh] -translate-x-1/2 opacity-50"
+        style="background: radial-gradient(circle, var(--color-gold-bright) 0%, transparent 60%); mix-blend-mode: screen; filter: blur(80px);"
+      >
       </div>
 
-      <CurtainOpening delay={1.6} duration={1.4}>
-        <h1
-          data-vary
-          class="is-epigraph font-display text-5xl leading-tight text-bone sm:text-6xl md:text-7xl"
+      {/* STAGE UNICA — THRESHOLD: ἀρχή + meandro + h1. */}
+      <div
+        data-hero-stage="threshold"
+        class="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center"
+      >
+        <RevealText variant="fade" delay={0.2} class="mb-10">
+          <p class="text-xs tracking-eyebrow text-gold-bright">
+            <span class="greek font-display text-base italic text-gold-bright">ἀρχή</span>
+            <span class="uppercase"> · origine</span>
+          </p>
+        </RevealText>
+
+        <div class="mb-10">
+          <GreekMeander
+            modules={5}
+            entrance="arrival"
+            arrivalDelay={0.6}
+            arrivalDuration={1.2}
+            class="mx-auto max-w-md opacity-90"
+          />
+        </div>
+
+        <CurtainOpening delay={1.6} duration={1.4}>
+          <h1
+            class="is-epigraph font-display text-5xl leading-tight text-bone sm:text-6xl md:text-7xl"
+          >
+            Dal mito<br />alla mente<span class="text-gold-bright">.</span>
+          </h1>
+        </CurtainOpening>
+
+        <p
+          data-hero-scroll-hint
+          class="absolute bottom-10 left-1/2 -translate-x-1/2 text-xs uppercase tracking-eyebrow text-bone-faint opacity-0"
         >
-          Dal mito<br />alla mente<span class="text-gold-bright">.</span>
-        </h1>
-      </CurtainOpening>
-
-      <RevealText variant="fade" delay={2.6} class="mt-16">
-        <p class="font-serif text-lg leading-loose text-bone-dim sm:text-xl">
-          archè è la piattaforma editoriale di Gabriella Marano. Una lettura
-          criminologica dei fenomeni umani che parte dal teatro greco — perché
-          le storie che ci raccontiamo da duemilacinquecento anni dicono molto
-          più della cronaca di ieri.
+          continua a scorrere ↓
         </p>
-      </RevealText>
-
-      <RevealText variant="fade" delay={2.9} class="mt-6">
-        <p class="font-display italic text-lg text-bone sm:text-xl">
-          Non cronaca nera. Un metodo.
-        </p>
-      </RevealText>
+      </div>
     </div>
+  </section>
+
+  {/* MOMENTO TESTUALE 1 — Il manifesto, in solo testo dopo il pin.
+      Generoso di respiro (py-32), max-w-text per concentrare la riga. */}
+  <section class="relative bg-ink px-6 py-32 sm:py-40">
+    <RevealText variant="fade" class="mx-auto block max-w-text text-center">
+      <p class="font-serif text-xl leading-loose text-bone sm:text-2xl md:text-3xl">
+        archè è la piattaforma editoriale di Gabriella Marano. Una lettura
+        criminologica dei fenomeni umani che parte dal teatro greco — perché
+        le storie che ci raccontiamo da duemilacinquecento anni dicono molto
+        più della cronaca di ieri.
+      </p>
+    </RevealText>
+  </section>
+
+  {/* MOMENTO TESTUALE 2 — La dichiarazione. Più stretta, più dichiarativa.
+      Su due righe per dare peso all'antitesi. */}
+  <section class="relative bg-ink px-6 py-24 text-center sm:py-32">
+    <RevealText variant="fade">
+      <p class="font-display italic text-4xl leading-tight text-bone sm:text-5xl md:text-6xl">
+        Non cronaca nera.
+      </p>
+      <p class="mt-4 font-display italic text-4xl leading-tight text-gold-bright sm:text-5xl md:text-6xl">
+        Un metodo.
+      </p>
+    </RevealText>
   </section>
 
   <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
@@ -151,7 +174,7 @@ const porte = [
       <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
         Le tre porte
       </p>
-      <h2 data-vary class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
         Da dove si entra
       </h2>
       <p class="mt-6 font-serif text-base leading-loose text-bone-dim">
@@ -188,7 +211,7 @@ const porte = [
     </ul>
   </section>
 
-  <GreekMeander modules={4} scrub={0.7} class="my-12 px-6 opacity-70" showKnot={true} />
+  <GreekMeander modules={4} scrub={0.7} class="my-12 px-6 opacity-70" showKnot={true} color="var(--color-patina-bright)" />
 
   <section class="mx-auto max-w-text px-6 pb-24 text-center">
     <RevealText variant="fade">

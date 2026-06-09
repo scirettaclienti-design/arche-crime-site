@@ -94,6 +94,12 @@ function settleAll(): void {
     setWebkitClipPath(el, 'none');
     el.style.filter = 'none';
   });
+  // Hero stage panels — reduced-motion: tutti visibili stack-ati (la CSS
+  // @media reduce qui sotto cambia layout per disabilitare lo sticky).
+  document.querySelectorAll<HTMLElement>('[data-hero-stage]').forEach((el) => {
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+  });
   clearPendingClass();
 }
 
@@ -368,24 +374,52 @@ async function initMotion(state: MotionState): Promise<void> {
     );
   });
 
-  // ── VARIABLE BODONI AXIS: i titoli display con [data-vary] passano da
-  // wght:400 a wght:700 mentre attraversano il viewport. Sembra che il
-  // titolo "metta a fuoco" leggendolo. Pattern preso dal sito sibling.
-  document.querySelectorAll<HTMLElement>('[data-vary]').forEach((el) => {
-    gsap.fromTo(
-      el,
-      { fontVariationSettings: '"wght" 400' },
-      {
-        fontVariationSettings: '"wght" 700',
+  // ── HERO-PIN: sezione [data-hero-pin] con sticky video full-bleed.
+  // Versione SOBRIA: niente crossfade di testi sopra il video. Lo stage
+  // unica "threshold" resta visibile durante il pin; uscendo dalla sezione
+  // sticky il flow editoriale riprende. Qui sotto:
+  //  - scroll hint che appare dopo l'entry animation dell'h1
+  //  - fade out dolce dello stage threshold mentre il pin sta per rilasciare
+  document.querySelectorAll<HTMLElement>('[data-hero-pin]').forEach((section) => {
+    const threshold = section.querySelector<HTMLElement>('[data-hero-stage="threshold"]');
+    const scrollHint = section.querySelector<HTMLElement>('[data-hero-scroll-hint]');
+    if (!threshold) return;
+
+    // Scroll hint fade-in dopo che il sipario dell'h1 ha aperto (~3.2s)
+    if (scrollHint) {
+      gsap.to(scrollHint, {
+        opacity: 1,
+        duration: 0.8,
+        delay: 3.2,
+        ease: 'power2.out',
+      });
+    }
+
+    // Dolce fade-out della threshold + hint mentre il pin sta per rilasciare
+    // (ultimi 25% della sezione → l'utente sta uscendo dal video pinned).
+    gsap.to(threshold, {
+      opacity: 0,
+      y: -30,
+      ease: 'power2.in',
+      scrollTrigger: {
+        trigger: section,
+        start: 'bottom 80%',
+        end: 'bottom top',
+        scrub: 0.8,
+      },
+    });
+    if (scrollHint) {
+      gsap.to(scrollHint, {
+        opacity: 0,
         ease: 'none',
         scrollTrigger: {
-          trigger: el,
+          trigger: section,
           start: 'top 80%',
-          end: 'top 25%',
-          scrub: 0.6,
+          end: 'top 30%',
+          scrub: 0.5,
         },
-      },
-    );
+      });
+    }
   });
 
   // ── PARALLAX-Y: solo decorativo (hero-glow, accenti oro). Mai sul testo.

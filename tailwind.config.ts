@@ -37,6 +37,14 @@ export default {
           bright: 'var(--color-gold-bright)',
           deep: 'var(--color-gold-deep)',
         },
+        // Accento secondario "patina" — verdi di bronzo ossidato (la pelle
+        // dei reperti). Freddo, archè-friendly. Usato per hover di link,
+        // knot decorativi alternativi, separatori sottili. Vedi global.css.
+        patina: {
+          DEFAULT: 'var(--color-patina)',
+          bright: 'var(--color-patina-bright)',
+          deep: 'var(--color-patina-deep)',
+        },
         // Accento secondario "brace" — solo per momenti viscerali della
         // pagina-episodio. Non usare altrove, vedi nota in global.css.
         ember: {
