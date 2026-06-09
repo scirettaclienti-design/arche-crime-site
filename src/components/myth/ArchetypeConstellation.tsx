@@ -45,14 +45,20 @@ interface Props {
 }
 
 // ── Coordinate desktop. ViewBox 1200×420.
-// Pattern a "S" — Medea bassa, Elettra alta, Aiace al centro, Eracle alta,
-// Troiane bassa. Crea un'onda visiva mito→mente.
+// Due FASCE rigorose, alternate:
+//   alta y=130 (Elettra, Eracle)
+//   bassa y=260 (Medea, Aiace, Le Troiane)
+// Le 5 colonne x sono equispaziate. L'alternanza è intenzionale,
+// le altezze sono identiche per riga. Il ritmo è visivamente regolare,
+// non casuale.
+const HIGH_Y = 130;
+const LOW_Y = 260;
 const NODE_POSITIONS: Record<MythSlug, { x: number; y: number }> = {
-  medea: { x: 130, y: 260 },
-  elettra: { x: 370, y: 130 },
-  aiace: { x: 600, y: 280 },
-  eracle: { x: 830, y: 130 },
-  troiane: { x: 1070, y: 260 },
+  medea: { x: 130, y: LOW_Y },
+  elettra: { x: 370, y: HIGH_Y },
+  aiace: { x: 600, y: LOW_Y },
+  eracle: { x: 830, y: HIGH_Y },
+  troiane: { x: 1070, y: LOW_Y },
 };
 
 // L'ordine canonico (sinistra→destra in desktop, alto→basso in mobile).
@@ -270,9 +276,15 @@ function ArchetypeCard({ data, focused, dimmed, onFocus, onBlur, mobile = false 
   const href = hasEpisode ? `/episodi/${data.episodeSlug}` : undefined;
   const ariaLabel = `${data.nome} · ${data.chiave}${hasEpisode ? ` · vai all'episodio` : ' · in arrivo'}`;
 
+  // Layout-grid contract: ogni card è flex-col verticale; il badge finale ha
+  // mt-auto così sta SEMPRE alla stessa distanza dal blocco testo, e tutte
+  // le card della stessa fascia (alta/bassa) finiscono allineate al pixel.
+  //
+  // Su desktop la card ha min-height fissa per imporre la griglia rigorosa.
+  // Su mobile la card è in flow normale, height auto.
   const commonClass = [
-    'group/node block w-full p-4 transition-all duration-medium ease-out-quart',
-    mobile ? 'p-6 text-left' : 'text-center',
+    'group/node flex h-full w-full flex-col p-4 transition-all duration-medium ease-out-quart',
+    mobile ? 'p-6 text-left' : 'min-h-[220px] text-center',
     dimmed ? 'opacity-50' : 'opacity-100',
     focused ? 'scale-[1.03]' : 'scale-100',
     hasEpisode ? 'cursor-pointer' : 'cursor-default',
@@ -280,17 +292,25 @@ function ArchetypeCard({ data, focused, dimmed, onFocus, onBlur, mobile = false 
 
   const inner = (
     <>
+      {/* Sezione GLIFO — altezza fissa (56px desktop / 40px mobile) per uniformità */}
       <div
-        className={`mx-auto ${mobile ? 'mb-3 inline-flex' : 'mb-4 flex justify-center'}`}
+        className={`${mobile ? 'mb-3 inline-flex' : 'mb-4 flex h-14 items-center justify-center'}`}
         style={{ color: focused ? 'var(--color-gold-bright)' : 'var(--color-gold)' }}
       >
         <Glyph size={mobile ? 40 : 56} ariaLabel={`Glifo: ${data.nome}`} />
       </div>
-      <p className="text-xs uppercase tracking-eyebrow text-gold-bright">
+
+      {/* Blocco TESTO — chiave + nome + fonte + nota stretti insieme.
+          min-height esplicita sull'eyebrow e sulla nota assicura che
+          card con copy più corto o più lungo finiscano della STESSA
+          altezza visiva. */}
+      <p
+        className={`text-xs uppercase tracking-eyebrow text-gold-bright ${mobile ? '' : 'flex min-h-[2.5em] items-end justify-center'}`}
+      >
         {data.chiave}
       </p>
       <h3
-        className={`mt-2 font-display leading-tight text-bone ${mobile ? 'text-2xl' : 'text-xl'}`}
+        className={`mt-2 font-display leading-tight text-bone ${mobile ? 'text-2xl' : 'text-xl flex min-h-[2.8em] items-center justify-center'}`}
       >
         {data.nome}
       </h3>
@@ -298,18 +318,21 @@ function ArchetypeCard({ data, focused, dimmed, onFocus, onBlur, mobile = false 
         {data.fonte}
       </p>
       <p
-        className={`mt-3 leading-loose text-bone-dim ${mobile ? 'text-sm' : 'text-xs'}`}
+        className={`mt-3 leading-loose text-bone-dim ${mobile ? 'text-sm' : 'text-xs min-h-[4.5em]'}`}
       >
         {data.nota}
       </p>
+
+      {/* Badge finale — mt-auto spinge SEMPRE al fondo della card, distanza
+          identica dal blocco testo in tutte le card della stessa fascia. */}
       {hasEpisode ? (
         <p
-          className={`mt-4 text-xs uppercase tracking-eyebrow ${focused ? 'text-bone' : 'text-gold-bright'} transition-colors`}
+          className={`mt-auto pt-4 text-xs uppercase tracking-eyebrow ${focused ? 'text-bone' : 'text-gold-bright'} transition-colors`}
         >
           {mobile ? 'Vai all\'episodio →' : 'L\'episodio →'}
         </p>
       ) : (
-        <p className="mt-4 text-xs uppercase tracking-eyebrow text-bone-faint">
+        <p className="mt-auto pt-4 text-xs uppercase tracking-eyebrow text-bone-faint">
           In arrivo
         </p>
       )}

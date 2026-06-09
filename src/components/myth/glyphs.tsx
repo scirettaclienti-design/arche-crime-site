@@ -90,69 +90,93 @@ export function ElettraGlyph(props: GlyphProps): ReactElement {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
- * AIACE — scudo incrinato.
- * L'identità eroica che non regge. Doppio cerchio concentrico (la scuto
- * arcaico greco con omphalos centrale) + crepa diagonale che attraversa
- * entrambi gli anelli. Niente arma, niente sangue: solo l'incrinatura.
+ * AIACE — scudo beotico spezzato.
+ * Lo scudo beotico (forma classica a "8" / clessidra con incavi laterali
+ * al centro), distintivo della tradizione greca arcaica. Episema (boss)
+ * centrale a punto, una crepa che parte dall'orlo superiore e scende
+ * obliquamente nella lobata superiore. NIENTE cerchi concentrici: la
+ * silhouette è inequivocabilmente uno scudo, non un mirino.
  * ───────────────────────────────────────────────────────────────────────── */
 export function AiaceGlyph(props: GlyphProps): ReactElement {
   const { color = 'currentColor', strokeWidth = 1.5 } = props;
   return (
-    <svg {...baseProps(props)} stroke={color} strokeWidth={strokeWidth} strokeLinecap="round">
-      {/* Cerchio esterno (orlo dello scudo) */}
-      <circle cx="32" cy="32" r="22" />
-      {/* Cerchio intermedio (corpo) */}
-      <circle cx="32" cy="32" r="15" />
-      {/* Umbone (omphalos) — punto al centro */}
-      <circle cx="32" cy="32" r="3" fill={color} stroke="none" />
-      {/* Crepa diagonale che spacca lo scudo */}
-      <line x1="14" y1="18" x2="50" y2="48" />
+    <svg {...baseProps(props)} stroke={color} strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round">
+      {/* Profilo dello scudo beotico (figura-8 con incavi laterali al centro).
+          Disegnato come un singolo path chiuso. */}
+      <path d="
+        M 32 10
+        C 44 10 48 16 48 22
+        C 48 26 42 28 38 30
+        L 48 30
+        C 48 34 48 38 48 42
+        C 48 48 44 54 32 54
+        C 20 54 16 48 16 42
+        C 16 38 16 34 16 30
+        L 26 30
+        C 22 28 16 26 16 22
+        C 16 16 20 10 32 10 Z" />
+      {/* Episema (umbone) al centro */}
+      <circle cx="32" cy="32" r="1.8" fill={color} stroke="none" />
+      {/* Crepa: parte dall'orlo superiore, scende obliqua nella lobata alta */}
+      <path d="M 28 14 L 31 22 L 27 28" />
     </svg>
   );
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
- * ERACLE — nodo di Eracle (Heracles knot) — motivo greco classico.
- * Due cerchi intrecciati: la forza che dovrebbe legare e proteggere. Una
- * leggera interruzione su uno dei due anelli evoca la perdita di controllo
- * (la forza che si rivolta). Geometrico, mai un'arma.
+ * ERACLE — nodo di Eracle, riprogettato come nodo QUADRATO.
+ * Quattro anelli ai vertici di un quadrato, attraversati da una X centrale
+ * che è il "nodo" vero (le due funi che si incrociano). La silhouette è
+ * angolare/quadrata — totalmente distinguibile dallo scudo tondeggiante
+ * di Aiace. La forza che dovrebbe legare e proteggere, qui annodata.
  * ───────────────────────────────────────────────────────────────────────── */
 export function EracleGlyph(props: GlyphProps): ReactElement {
   const { color = 'currentColor', strokeWidth = 1.5 } = props;
   return (
-    <svg {...baseProps(props)} stroke={color} strokeWidth={strokeWidth} strokeLinecap="round">
-      {/* Anello sinistro — completo */}
-      <circle cx="24" cy="32" r="12" />
-      {/* Anello destro — con piccola interruzione in alto (la "rottura") */}
-      <path d="M 35 22 A 12 12 0 1 1 32 23.2" />
-      {/* Trattino interno che enfatizza l'intreccio (il "nodo") */}
-      <line x1="28" y1="26" x2="36" y2="38" opacity="0.7" />
-      <line x1="36" y1="26" x2="28" y2="38" opacity="0.7" />
+    <svg {...baseProps(props)} stroke={color} strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round">
+      {/* 4 anelli ai vertici di un quadrato 36×36 (centrato in 32,32) */}
+      <ellipse cx="18" cy="18" rx="7" ry="6" />
+      <ellipse cx="46" cy="18" rx="7" ry="6" />
+      <ellipse cx="18" cy="46" rx="7" ry="6" />
+      <ellipse cx="46" cy="46" rx="7" ry="6" />
+      {/* X centrale: le due funi che si annodano */}
+      <line x1="22" y1="22" x2="42" y2="42" />
+      <line x1="42" y1="22" x2="22" y2="42" />
+      {/* Punto-perno al centro dell'intreccio */}
+      <circle cx="32" cy="32" r="1.6" fill={color} stroke="none" />
     </svg>
   );
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
- * LE TROIANE — voci messe a tacere.
- * 5 strokes verticali in fila, ognuno più corto del precedente. Una linea
- * di voci/figure-coro che si abbassa, fino a un punto solitario alla fine.
- * Niente mura crollanti (rischio cliché): l'idea è il diminuendo, il
- * silenzio dopo la voce. Sotto, una sottile linea-terra le ancora.
+ * LE TROIANE — lira greca con una corda spezzata.
+ * Il canto del coro interrotto. Cassa armonica curva alla base, due bracci
+ * curvi che salgono ai lati, traversa orizzontale in cima. Quattro corde
+ * verticali: tre intere e una SPEZZATA al terzo superiore, con la parte
+ * inferiore che pende mollemente. Voce silenziata, non grafico statistico.
  * ───────────────────────────────────────────────────────────────────────── */
 export function TroianeGlyph(props: GlyphProps): ReactElement {
   const { color = 'currentColor', strokeWidth = 1.5 } = props;
-  const baseY = 50;
-  const xs = [14, 22, 30, 38, 46];
-  const heights = [30, 25, 19, 13, 7];
   return (
-    <svg {...baseProps(props)} stroke={color} strokeWidth={strokeWidth} strokeLinecap="round">
-      {xs.map((x, i) => (
-        <line key={x} x1={x} y1={baseY - heights[i]!} x2={x} y2={baseY} />
-      ))}
-      {/* Punto finale: l'ultima voce ridotta a sussurro */}
-      <circle cx="54" cy={baseY - 1} r="1.2" fill={color} stroke="none" />
-      {/* Linea-terra sotto, sottilissima */}
-      <line x1="10" y1="54" x2="58" y2="54" opacity="0.55" />
+    <svg {...baseProps(props)} stroke={color} strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round">
+      {/* Traversa superiore (giogo) */}
+      <line x1="18" y1="14" x2="46" y2="14" />
+      {/* Braccio sinistro: dal giogo curva verso l'esterno e rientra alla cassa */}
+      <path d="M 18 14 C 10 24 10 36 18 46" />
+      {/* Braccio destro: speculare */}
+      <path d="M 46 14 C 54 24 54 36 46 46" />
+      {/* Cassa armonica (chelys) — semplice arco alla base */}
+      <path d="M 18 46 C 24 52 40 52 46 46" />
+      {/* Linea che chiude la cassa in alto (ponte) */}
+      <line x1="22" y1="46" x2="42" y2="46" opacity="0.65" />
+      {/* Corde: 3 intere */}
+      <line x1="25" y1="16" x2="25" y2="46" />
+      <line x1="29.5" y1="16" x2="29.5" y2="46" />
+      <line x1="34" y1="16" x2="34" y2="46" />
+      {/* Quarta corda — SPEZZATA: stub dal giogo */}
+      <line x1="38.5" y1="16" x2="38.5" y2="26" />
+      {/* Parte inferiore della corda spezzata, che pende molle */}
+      <path d="M 38.5 30 Q 42 35 39.5 42" />
     </svg>
   );
 }
