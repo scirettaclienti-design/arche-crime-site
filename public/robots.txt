@@ -1,0 +1,11 @@
+# archè · archecrime.com
+# Brand-media editoriale di Gabriella Marano.
+#
+# Tutti i crawler benvenuti sulle 6 pagine pubbliche + future /episodi/{slug}.
+# Niente rotte applicative ancora; quando arriveranno (auth, area riservata,
+# checkout) andranno aggiunte come Disallow espliciti.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://archecrime.com/sitemap-index.xml

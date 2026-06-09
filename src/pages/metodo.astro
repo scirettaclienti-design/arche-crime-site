@@ -2,6 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import Ornament from '../components/Ornament.astro';
+import JsonLd from '../components/seo/JsonLd.astro';
+import { faqPageSchema } from '../lib/seo';
 
 export const prerender = true;
 
@@ -43,6 +45,20 @@ const cinqueMai = [
   title="Il metodo"
   description="Il metodo archè: leggere la criminologia attraverso il mito greco. ἀρχή come origine, il fossato tra archeologia e criminologia, i cinque 'mai' che ci tengono lontani dalla cronaca nera."
 >
+  {/* FAQPage schema: i cinque "mai" sono già visibili in pagina come ol.
+      Il testo dell'answer è IDENTICO a quello a video (no mismatch markup
+      vs render, sarebbe penalizzante). */}
+  <Fragment slot="head">
+    <JsonLd
+      data={faqPageSchema(
+        cinqueMai.map((m) => ({
+          question: m.titolo.replace(/\.$/, ''),
+          answer: m.nota,
+        })),
+      )}
+    />
+  </Fragment>
+
   <PageHeader
     eyebrow="Il metodo"
     title="Dal mito alla mente"
@@ -102,8 +118,9 @@ const cinqueMai = [
           <p>
             Il fossato fra le due discipline non è retorico: è la distanza fra
             l'oggetto che è sopravvissuto e il gesto che lo ha generato. Imparare a
-            scavalcarlo, in entrambe le direzioni, è il mestiere di Gabriella Marano
-            — e l'unica ragione per cui questo progetto può esistere.
+            scavalcarlo, in entrambe le direzioni, è
+            <a href="/chi-e">il mestiere di Gabriella Marano</a> — e l'unica
+            ragione per cui questo progetto può esistere.
           </p>
         </div>
       </div>
@@ -134,10 +151,11 @@ const cinqueMai = [
               Dal mito al fenomeno
             </h3>
             <p class="mt-6 font-serif leading-loose text-bone-dim">
-              Si parte dal testo classico. Medea, Aiace, Le Troiane: archetipi che
-              la tragedia ha messo in scena per la prima volta. Si chiede cosa quel
-              mito stesse già nominando — e si scopre che ha un nome anche oggi:
-              figlicidio, dissociazione, vittimizzazione secondaria.
+              Si parte dal testo classico. Medea, Aiace, Le Troiane:
+              <a href="/episodi">archetipi che la tragedia ha messo in scena per la prima volta</a>.
+              Si chiede cosa quel mito stesse già nominando — e si scopre che ha
+              un nome anche oggi: figlicidio, dissociazione, vittimizzazione
+              secondaria.
             </p>
           </article>
           <article class="bg-ink-2 p-8 sm:p-10">

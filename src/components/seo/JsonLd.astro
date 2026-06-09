@@ -1,0 +1,25 @@
+---
+/**
+ * JsonLd — wrapper per <script type="application/ld+json">.
+ *
+ * Riceve un oggetto schema.org-compatible e lo serializza inline nel DOM.
+ * `is:inline` mantiene lo script tag intatto al primo render (no processamento
+ * di Astro/Vite), così il crawler lo vede al volo.
+ *
+ * Usage:
+ *   import JsonLd from '~/components/seo/JsonLd.astro';
+ *   import { orgSchema } from '~/lib/seo';
+ *   <JsonLd data={orgSchema()} />
+ */
+
+import type { JsonLdSchema } from '../../lib/seo';
+
+interface Props {
+  data: JsonLdSchema | object;
+}
+
+const { data } = Astro.props as Props;
+const json = JSON.stringify(data);
+---
+
+<script type="application/ld+json" is:inline set:html={json}></script>
