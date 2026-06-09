@@ -117,6 +117,26 @@ section p a:hover,
   border-radius: 2px;
 }
 
+/* Matrice archetipi — hover state.
+   Mostra l'alone gold-deep dietro il glifo, fa ruotare lentamente il
+   glifo (micro-vita), e applica un leggero glow ai tratti principali.
+   Reduced-motion: solo il glow di colore, niente rotazione. */
+.arch-node-card.is-focused .arch-glow {
+  opacity: 0.55;
+}
+.arch-node-card.is-focused .arch-node-glyph {
+  animation: arch-glyph-breathe 6s ease-in-out infinite;
+}
+@keyframes arch-glyph-breathe {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(3deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arch-node-card.is-focused .arch-node-glyph {
+    animation: none;
+  }
+}
+
 /* Hero pin a reduced-motion: niente sticky, niente sezione 260vh,
    gli stage si impilano in flow normale uno sotto l'altro a viewport piena. */
 @media (prefers-reduced-motion: reduce) {

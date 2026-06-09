@@ -2,55 +2,44 @@ import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { MYTH_GLYPHS, type MythSlug } from './glyphs';
 
 /**
- * ArchetypeConstellation — il "gioiello" archè.
+ * ArchetypeConstellation — il "gioiello" archè, ora con costruzione
+ * animata immersiva.
  *
- * Trasforma la matrice statica dei 5 archetipi in una composizione
- * interattiva. Desktop: 5 nodi su un asse a S (∾), il meandro greco li
- * connette come un filo dal mito alla mente. Mobile: stack verticale
- * leggibile, il meandro diventa una colonna sottile che scende fra i nodi.
+ * All'ingresso nel viewport il rito si compone sotto gli occhi:
+ *   1. Medea già al suo posto (origine del filo): glifo si incide,
+ *      testo emerge.
+ *   2. Il meandro si traccia da Medea verso Elettra (stroke-dashoffset).
+ *   3. Raggiunto Elettra, il suo glifo si incide e il testo emerge.
+ *   4. Stessa procedura fino a Le Troiane.
+ *   5. A costruzione completa, breve pulse oro dei glifi (settle).
+ * Tempo totale ~3 secondi.
  *
- * Contratti non negoziabili:
- *  1. Leggibilità SOPRA tutto. Il contenuto è sempre raggiungibile senza
- *     hover (mobile, tastiera, lettori di schermo).
- *  2. Reduced-motion: niente stagger, niente tracciamento, niente
- *     transform. Si vede la matrice completa, ferma, e regge da sola.
- *  3. SSR-friendly: il primo render server-side mostra TUTTO al posto
- *     giusto. L'interattività è progressive enhancement.
- *  4. Linking smart: se per quell'archetipo esiste un episodio pubblicato,
- *     il nodo è un <a> verso /episodi/{episodeSlug}. Altrimenti è un nodo
- *     informativo con badge "in arrivo" elegante.
+ * Contratti:
+ *  - reduced-motion → niente self-drawing, niente cascade. Glifi e testo
+ *    sono completi al primo paint.
+ *  - SSR-safe: il primo render Astro mostra la matrice intera; al mount
+ *    React, se motion è attivo, lo stato pre-disegno viene applicato
+ *    e parte la timeline.
+ *  - Linking smart: invariato. Episodio pubblicato → <a>, altrimenti
+ *    <div role=group> con badge "In arrivo".
  */
 
 export interface ArchetypeNode {
-  /** Slug del mito (chiave nella mappa dei glifi). */
   slug: MythSlug;
-  /** Nome del mito, es. "Medea". */
   nome: string;
-  /** Fonte classica, es. "Euripide". */
   fonte: string;
-  /** Chiave criminologica, es. "Il figlicidio". */
   chiave: string;
-  /** Una riga di lettura. */
   nota: string;
-  /** Slug dell'episodio pubblicato per questo mito, se esiste. */
   episodeSlug?: string;
 }
 
 interface Props {
   archetypes: ArchetypeNode[];
-  /** Override del titolo della sezione. */
   title?: string;
-  /** Override dell'eyebrow. */
   eyebrow?: string;
 }
 
-// ── Coordinate desktop. ViewBox 1200×420.
-// Due FASCE rigorose, alternate:
-//   alta y=130 (Elettra, Eracle)
-//   bassa y=260 (Medea, Aiace, Le Troiane)
-// Le 5 colonne x sono equispaziate. L'alternanza è intenzionale,
-// le altezze sono identiche per riga. Il ritmo è visivamente regolare,
-// non casuale.
+// ── Posizioni desktop (viewBox 1200×420), due fasce rigorose.
 const HIGH_Y = 130;
 const LOW_Y = 260;
 const NODE_POSITIONS: Record<MythSlug, { x: number; y: number }> = {
@@ -61,7 +50,6 @@ const NODE_POSITIONS: Record<MythSlug, { x: number; y: number }> = {
   troiane: { x: 1070, y: LOW_Y },
 };
 
-// L'ordine canonico (sinistra→destra in desktop, alto→basso in mobile).
 const ORDER: MythSlug[] = ['medea', 'elettra', 'aiace', 'eracle', 'troiane'];
 
 export default function ArchetypeConstellation({
@@ -71,13 +59,9 @@ export default function ArchetypeConstellation({
 }: Props): ReactElement {
   const [focused, setFocused] = useState<MythSlug | null>(null);
   const [reduced, setReduced] = useState(false);
-  const meanderPathRef = useRef<SVGPathElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  // ID stabile: lo stesso server e client, evita mismatch hydration con useId
-  // che in alcune combinazioni di @astrojs/react genera "Invalid hook call".
   const meanderId = 'arch-constellation';
 
-  // Indicizza gli archetipi per slug per accesso rapido.
   const byslug = new Map(archetypes.map((a) => [a.slug, a]));
 
   useEffect(() => {
@@ -94,6 +78,7 @@ export default function ArchetypeConstellation({
     if (!container) return;
 
     let cleanup: (() => void) | undefined;
+
     void (async () => {
       const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([
         import('gsap'),
@@ -101,40 +86,146 @@ export default function ArchetypeConstellation({
       ]);
       gsap.registerPlugin(ScrollTrigger);
 
-      // Stato iniziale (pre-hide degli elementi)
-      const nodes = container.querySelectorAll<HTMLElement>('[data-arch-node]');
-      const meanderSvg = container.querySelector<SVGSVGElement>('svg.arch-meander');
+      // ── Pre-hide: tutti gli stroke dei glifi nascosti via dashoffset =
+      // length, tutti i dettagli fill a opacity 0, tutti i testi a opacity 0
+      // con piccolo y, tutti i 4 segmenti del meandro nascosti via dashoffset.
+      const glyphs = ORDER.map((slug) => ({
+        slug,
+        node: container.querySelector<HTMLElement>(
+          `[data-arch-node][data-arch-slug="${slug}"]`,
+        ),
+      })).filter((g) => g.node !== null);
 
-      gsap.set(nodes, { opacity: 0, y: 16 });
-      if (meanderSvg) {
-        gsap.set(meanderSvg, {
-          clipPath: 'inset(0 100% 0 0)',
-          webkitClipPath: 'inset(0 100% 0 0)',
+      glyphs.forEach(({ node }) => {
+        if (!node) return;
+        const strokes = node.querySelectorAll<SVGGeometryElement>(
+          '.glyph-stroke, .glyph-shadow',
+        );
+        strokes.forEach((el) => {
+          try {
+            const len = el.getTotalLength();
+            el.style.strokeDasharray = `${len}`;
+            el.style.strokeDashoffset = `${len}`;
+          } catch {
+            // Element non drawable: skip.
+          }
         });
-      }
+        const detailFills = node.querySelectorAll<HTMLElement>('.glyph-detail');
+        detailFills.forEach((el) => {
+          el.style.opacity = '0';
+        });
+        // Testi del nodo (eyebrow + nome + fonte + nota + badge) pre-hidden
+        const texts = node.querySelectorAll<HTMLElement>('.arch-node-text');
+        texts.forEach((el) => {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(8px)';
+        });
+      });
 
-      // Timeline: meandro inizia, nodi entrano in stagger sopra.
+      // ── Pre-hide dei 4 segmenti del meandro
+      const meanderSegments =
+        container.querySelectorAll<SVGPathElement>('.arch-meander-segment');
+      meanderSegments.forEach((path) => {
+        try {
+          const len = path.getTotalLength();
+          path.style.strokeDasharray = `${len}`;
+          path.style.strokeDashoffset = `${len}`;
+        } catch {
+          /* noop */
+        }
+      });
+
+      // ── Timeline orchestrata
       const trigger = ScrollTrigger.create({
         trigger: container,
         start: 'top 80%',
         once: true,
         onEnter: () => {
-          if (meanderSvg) {
-            gsap.to(meanderSvg, {
-              clipPath: 'inset(0 0 0 0)',
-              webkitClipPath: 'inset(0 0 0 0)',
-              duration: 1.6,
-              ease: 'power2.inOut',
-            });
-          }
-          gsap.to(nodes, {
-            opacity: 1,
-            y: 0,
-            duration: 0.9,
-            stagger: 0.15,
-            delay: 0.3,
-            ease: 'power3.out',
+          const tl = gsap.timeline();
+
+          // Per ogni nodo nell'ordine canonico:
+          //   1. (per nodi > 0) traccia il segmento di meandro che porta a quel nodo
+          //   2. self-draw del glifo (strokes)
+          //   3. fade-in dei dettagli (fill)
+          //   4. fade-up del testo del nodo
+          ORDER.forEach((slug, i) => {
+            const nodeEl = container.querySelector<HTMLElement>(
+              `[data-arch-node][data-arch-slug="${slug}"]`,
+            );
+            if (!nodeEl) return;
+            const strokes = nodeEl.querySelectorAll<SVGGeometryElement>(
+              '.glyph-stroke, .glyph-shadow',
+            );
+            const details = nodeEl.querySelectorAll<HTMLElement>('.glyph-detail');
+            const texts = nodeEl.querySelectorAll<HTMLElement>('.arch-node-text');
+
+            // Segmento di meandro che porta a questo nodo (per i > 0)
+            if (i > 0) {
+              const segment = container.querySelector<SVGPathElement>(
+                `.arch-meander-segment[data-segment="${i - 1}"]`,
+              );
+              if (segment) {
+                tl.to(
+                  segment,
+                  { strokeDashoffset: 0, duration: 0.32, ease: 'power1.inOut' },
+                  '>-0.05',
+                );
+              }
+            }
+
+            // Self-draw del glifo
+            if (strokes.length) {
+              tl.to(
+                strokes,
+                {
+                  strokeDashoffset: 0,
+                  duration: 0.45,
+                  stagger: 0.02,
+                  ease: 'power2.out',
+                },
+                '>-0.1',
+              );
+            }
+
+            // Dettagli (boss/perle/akrotério) emergono
+            if (details.length) {
+              tl.to(
+                details,
+                { opacity: 1, duration: 0.25, ease: 'power2.out' },
+                '>-0.15',
+              );
+            }
+
+            // Testo del nodo emerge
+            if (texts.length) {
+              tl.to(
+                texts,
+                {
+                  opacity: 1,
+                  y: 0,
+                  duration: 0.35,
+                  stagger: 0.05,
+                  ease: 'power2.out',
+                },
+                '>-0.20',
+              );
+            }
           });
+
+          // ── Settle finale: tutti i glifi pulsano una volta in gold-bright
+          // (filter brightness su tutti i .glyph-main contemporaneamente).
+          const allMain = container.querySelectorAll<HTMLElement>('.glyph-main');
+          tl.to(
+            allMain,
+            {
+              filter: 'brightness(1.6) drop-shadow(0 0 6px var(--color-gold-bright))',
+              duration: 0.35,
+              ease: 'sine.inOut',
+              yoyo: true,
+              repeat: 1,
+            },
+            '>+0.05',
+          );
         },
       });
 
@@ -146,11 +237,14 @@ export default function ArchetypeConstellation({
     };
   }, [reduced]);
 
-  // Path del meandro: connette i 5 nodi con pattern Greek key fra ognuno.
-  // Per semplicità il path è composto da archi gentili (curve di Bezier)
-  // che passano per i 5 punti, decorati con piccoli "scalini" Greek-key fra ogni
-  // coppia per restare nel linguaggio del meandro signature del sito.
-  const meanderPath = buildConstellationMeander(ORDER.map((s) => NODE_POSITIONS[s]));
+  // Path dei 4 segmenti del meandro (Medea→Elettra, Elettra→Aiace,
+  // Aiace→Eracle, Eracle→Troiane). Ognuno autonomo per controllo individuale.
+  const segments: string[] = [];
+  for (let i = 0; i < ORDER.length - 1; i += 1) {
+    const a = NODE_POSITIONS[ORDER[i]!];
+    const b = NODE_POSITIONS[ORDER[i + 1]!];
+    segments.push(buildMeanderSegment(a, b));
+  }
 
   return (
     <section
@@ -171,7 +265,7 @@ export default function ArchetypeConstellation({
         </h2>
       </header>
 
-      {/* DESKTOP — Costellazione a S (≥ md, 768px+) */}
+      {/* DESKTOP — Costellazione con cascade */}
       <div className="relative mt-16 hidden md:block">
         <svg
           viewBox="0 0 1200 420"
@@ -180,23 +274,29 @@ export default function ArchetypeConstellation({
           aria-hidden="true"
           preserveAspectRatio="xMidYMid meet"
         >
-          <path
-            ref={meanderPathRef}
-            d={meanderPath}
+          <g
             fill="none"
             stroke="var(--color-gold)"
             strokeWidth="1"
             strokeLinecap="square"
             strokeLinejoin="miter"
             vectorEffect="non-scaling-stroke"
-            opacity="0.65"
-          />
+            opacity="0.7"
+          >
+            {segments.map((d, i) => (
+              <path
+                key={`segment-${i}`}
+                d={d}
+                className="arch-meander-segment"
+                data-segment={i}
+              />
+            ))}
+          </g>
         </svg>
 
         <ul
           className="relative w-full"
           style={{
-            // Aspect ratio del SVG di sfondo: 1200×420 = 2.857
             aspectRatio: '1200 / 420',
             listStyle: 'none',
             padding: 0,
@@ -233,7 +333,7 @@ export default function ArchetypeConstellation({
         </ul>
       </div>
 
-      {/* MOBILE — Stack verticale (< md, 768px-) */}
+      {/* MOBILE — Stack verticale */}
       <ul className="mt-12 flex flex-col items-stretch gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] md:hidden">
         {ORDER.map((slug) => {
           const a = byslug.get(slug);
@@ -256,11 +356,6 @@ export default function ArchetypeConstellation({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
- * ArchetypeCard — il singolo nodo (riusato su desktop ed mobile).
- * Se episodeSlug è presente, è un <a> reale che porta a /episodi/{slug}.
- * Altrimenti è un <div> informativo col badge "in arrivo".
- * ───────────────────────────────────────────────────────────────────────── */
 interface CardProps {
   data: ArchetypeNode;
   focused: boolean;
@@ -270,69 +365,79 @@ interface CardProps {
   mobile?: boolean;
 }
 
-function ArchetypeCard({ data, focused, dimmed, onFocus, onBlur, mobile = false }: CardProps): ReactElement {
+function ArchetypeCard({
+  data,
+  focused,
+  dimmed,
+  onFocus,
+  onBlur,
+  mobile = false,
+}: CardProps): ReactElement {
   const Glyph = MYTH_GLYPHS[data.slug];
   const hasEpisode = !!data.episodeSlug;
   const href = hasEpisode ? `/episodi/${data.episodeSlug}` : undefined;
   const ariaLabel = `${data.nome} · ${data.chiave}${hasEpisode ? ` · vai all'episodio` : ' · in arrivo'}`;
 
-  // Layout-grid contract: ogni card è flex-col verticale; il badge finale ha
-  // mt-auto così sta SEMPRE alla stessa distanza dal blocco testo, e tutte
-  // le card della stessa fascia (alta/bassa) finiscono allineate al pixel.
-  //
-  // Su desktop la card ha min-height fissa per imporre la griglia rigorosa.
-  // Su mobile la card è in flow normale, height auto.
   const commonClass = [
-    'group/node flex h-full w-full flex-col p-4 transition-all duration-medium ease-out-quart',
+    'group/node arch-node-card relative flex h-full w-full flex-col p-4 transition-all duration-medium ease-out-quart',
     mobile ? 'p-6 text-left' : 'min-h-[220px] text-center',
     dimmed ? 'opacity-50' : 'opacity-100',
-    focused ? 'scale-[1.03]' : 'scale-100',
+    focused ? 'is-focused scale-[1.03]' : 'scale-100',
     hasEpisode ? 'cursor-pointer' : 'cursor-default',
   ].join(' ');
 
   const inner = (
     <>
-      {/* Sezione GLIFO — altezza fissa (56px desktop / 40px mobile) per uniformità */}
+      {/* Hover glow oro morbido dietro il glifo (solo desktop, focused) */}
+      {!mobile && (
+        <div
+          aria-hidden="true"
+          className="arch-glow pointer-events-none absolute left-1/2 top-6 -z-10 h-20 w-20 -translate-x-1/2 rounded-full opacity-0 transition-opacity duration-medium"
+          style={{
+            background:
+              'radial-gradient(circle, var(--color-gold-deep) 0%, transparent 65%)',
+            filter: 'blur(14px)',
+          }}
+        />
+      )}
+
       <div
-        className={`${mobile ? 'mb-3 inline-flex' : 'mb-4 flex h-14 items-center justify-center'}`}
-        style={{ color: focused ? 'var(--color-gold-bright)' : 'var(--color-gold)' }}
+        className={`arch-node-glyph ${mobile ? 'mb-3 inline-flex' : 'mb-4 flex h-14 items-center justify-center'}`}
+        style={{
+          color: focused ? 'var(--color-gold-bright)' : 'var(--color-gold)',
+          transition: 'color 280ms var(--ease-out-quart, ease-out)',
+        }}
       >
         <Glyph size={mobile ? 40 : 56} ariaLabel={`Glifo: ${data.nome}`} />
       </div>
 
-      {/* Blocco TESTO — chiave + nome + fonte + nota stretti insieme.
-          min-height esplicita sull'eyebrow e sulla nota assicura che
-          card con copy più corto o più lungo finiscano della STESSA
-          altezza visiva. */}
       <p
-        className={`text-xs uppercase tracking-eyebrow text-gold-bright ${mobile ? '' : 'flex min-h-[2.5em] items-end justify-center'}`}
+        className={`arch-node-text text-xs uppercase tracking-eyebrow text-gold-bright ${mobile ? '' : 'flex min-h-[2.5em] items-end justify-center'}`}
       >
         {data.chiave}
       </p>
       <h3
-        className={`mt-2 font-display leading-tight text-bone ${mobile ? 'text-2xl' : 'text-xl flex min-h-[2.8em] items-center justify-center'}`}
+        className={`arch-node-text mt-2 font-display leading-tight text-bone ${mobile ? 'text-2xl' : 'text-xl flex min-h-[2.8em] items-center justify-center'}`}
       >
         {data.nome}
       </h3>
-      <p className="mt-1 font-display text-xs italic text-bone-faint">
+      <p className="arch-node-text mt-1 font-display text-xs italic text-bone-faint">
         {data.fonte}
       </p>
       <p
-        className={`mt-3 leading-loose text-bone-dim ${mobile ? 'text-sm' : 'text-xs min-h-[4.5em]'}`}
+        className={`arch-node-text mt-3 leading-loose text-bone-dim ${mobile ? 'text-sm' : 'text-xs min-h-[4.5em]'}`}
       >
         {data.nota}
       </p>
 
-      {/* Badge finale — mt-auto spinge SEMPRE al fondo della card, distanza
-          identica dal blocco testo in tutte le card della stessa fascia. */}
       {hasEpisode ? (
         <p
-          className={`mt-auto pt-4 text-xs uppercase tracking-eyebrow ${focused ? 'text-bone' : 'text-gold-bright'} transition-colors`}
+          className={`arch-node-text mt-auto pt-4 text-xs uppercase tracking-eyebrow ${focused ? 'text-bone' : 'text-gold-bright'} transition-colors`}
         >
-          {mobile ? 'Vai all\'episodio →' : 'L\'episodio →'}
+          {mobile ? "Vai all'episodio →" : "L'episodio →"}
         </p>
       ) : (
-        <p className="mt-auto pt-4 text-xs uppercase tracking-eyebrow text-bone-faint">
+        <p className="arch-node-text mt-auto pt-4 text-xs uppercase tracking-eyebrow text-bone-faint">
           In arrivo
         </p>
       )}
@@ -377,40 +482,27 @@ function ArchetypeCard({ data, focused, dimmed, onFocus, onBlur, mobile = false 
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
- * Costruisce il path SVG del meandro che lega i 5 nodi. Tra ogni coppia
- * di nodi disegna un piccolo "Greek key" decorativo, simbolicamente coerente
- * col meandro signature del sito.
- *
- * I 5 punti sono passati in ordine canonico. Il path:
- *   - Parte dal centro del primo nodo
- *   - Tra ogni coppia consecutiva, disegna una sequenza che esce, va su (o giù
- *     a seconda dell'asse y), torna giù, e arriva al nodo successivo
- *   - I segmenti sono solo orizzontali e verticali (perfetti per il linguaggio
- *     della greca greca)
+ * Path di UN segmento del meandro (un Greek-key fra due nodi).
+ * 9 line segments (puramente orizzontali/verticali) — il pattern signature.
  * ───────────────────────────────────────────────────────────────────────── */
-function buildConstellationMeander(points: Array<{ x: number; y: number }>): string {
-  if (points.length === 0) return '';
-  const segs: string[] = [`M ${points[0]!.x} ${points[0]!.y}`];
-  for (let i = 1; i < points.length; i += 1) {
-    const p0 = points[i - 1]!;
-    const p1 = points[i]!;
-    const dx = p1.x - p0.x;
-    const dy = p1.y - p0.y;
-    const midX = p0.x + dx / 2;
-    const midY = p0.y + dy / 2;
-    const stepW = Math.abs(dx) * 0.18;
-    const stepH = 14;
-    const upOrDown = p1.y < p0.y ? -1 : 1;
-    // Pattern: orizzontale → su(o giù) → orizzontale → giù(o su) → orizzontale → nodo
-    segs.push(`L ${p0.x + stepW} ${p0.y}`);
-    segs.push(`L ${p0.x + stepW} ${p0.y + upOrDown * stepH}`);
-    segs.push(`L ${midX - stepW} ${p0.y + upOrDown * stepH}`);
-    segs.push(`L ${midX - stepW} ${midY}`);
-    segs.push(`L ${midX + stepW} ${midY}`);
-    segs.push(`L ${midX + stepW} ${p1.y - upOrDown * stepH}`);
-    segs.push(`L ${p1.x - stepW} ${p1.y - upOrDown * stepH}`);
-    segs.push(`L ${p1.x - stepW} ${p1.y}`);
-    segs.push(`L ${p1.x} ${p1.y}`);
-  }
+function buildMeanderSegment(p0: { x: number; y: number }, p1: { x: number; y: number }): string {
+  const dx = p1.x - p0.x;
+  const dy = p1.y - p0.y;
+  const midX = p0.x + dx / 2;
+  const midY = p0.y + dy / 2;
+  const stepW = Math.abs(dx) * 0.18;
+  const stepH = 14;
+  const upOrDown = p1.y < p0.y ? -1 : 1;
+  const segs: string[] = [];
+  segs.push(`M ${p0.x} ${p0.y}`);
+  segs.push(`L ${p0.x + stepW} ${p0.y}`);
+  segs.push(`L ${p0.x + stepW} ${p0.y + upOrDown * stepH}`);
+  segs.push(`L ${midX - stepW} ${p0.y + upOrDown * stepH}`);
+  segs.push(`L ${midX - stepW} ${midY}`);
+  segs.push(`L ${midX + stepW} ${midY}`);
+  segs.push(`L ${midX + stepW} ${p1.y - upOrDown * stepH}`);
+  segs.push(`L ${p1.x - stepW} ${p1.y - upOrDown * stepH}`);
+  segs.push(`L ${p1.x - stepW} ${p1.y}`);
+  segs.push(`L ${p1.x} ${p1.y}`);
   return segs.join(' ');
 }
