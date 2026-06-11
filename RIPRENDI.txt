@@ -1,0 +1,18 @@
+Lavoriamo su archecrime.com. Il progetto è in ~/Projects/arche-studio/arche-crime-site/.
+
+Prima cosa: cd in quella cartella, leggi RESUME.md tutto, controlla "git log --oneline -10" e "git status". Il RESUME contiene:
+- Identità brand (archè, Gabriella Marano, brand-media editoriale, NON cronaca nera)
+- Stack (Astro 5 ibrido su Vercel + GitHub Packages design system)
+- Stato di tutte le 6 pagine + i sistemi (motion, video, sticky-pin, archetype constellation con cascade)
+- Vincoli ("mai" non negoziabili: no rosso, no popup, no newsletter aggressiva, no waitlist, no testimonial)
+- Le mie preferenze esplicite (estetica/velocità/semplicità/intuitività, niente allargamento Bodoni, momenti solo-testo tra video, accento patina)
+- Cosa è committato vs pendente
+- I 5 prompt video ancora da generare
+
+Quando hai finito di leggere, dimmi in poche righe:
+1. Ultimo commit + cosa fa
+2. Stato deploy Vercel
+3. Cosa è pendente in ordine di valore
+4. Eventuali bug noti
+
+Poi aspetta che ti dia il prossimo blocco da implementare. Non rifare niente di già fatto. Non proporre niente che violi i vincoli "mai" del RESUME.
