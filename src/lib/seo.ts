@@ -153,6 +153,54 @@ export function faqPageSchema(
   };
 }
 
+/** VideoObject schema.org per la pagina-episodio.
+ *  Usa i dati YouTube (thumbnail via i.ytimg.com, embedUrl ufficiale).
+ *  Riferimento: https://schema.org/VideoObject + Google video rich results. */
+export interface VideoObjectArgs {
+  name: string;
+  description: string;
+  youtubeId: string;
+  uploadDate?: string;
+  durationISO?: string;
+  thumbnailUrl?: string;
+  contentUrl?: string;
+}
+export function videoObjectSchema(args: VideoObjectArgs): JsonLdSchema {
+  const thumb =
+    args.thumbnailUrl ?? `https://i.ytimg.com/vi/${args.youtubeId}/maxresdefault.jpg`;
+  const embed = `https://www.youtube.com/embed/${args.youtubeId}`;
+  const watch = args.contentUrl ?? `https://www.youtube.com/watch?v=${args.youtubeId}`;
+  const out: JsonLdSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: args.name,
+    description: args.description,
+    thumbnailUrl: thumb,
+    embedUrl: embed,
+    contentUrl: watch,
+    inLanguage: 'it-IT',
+  };
+  if (args.uploadDate) out.uploadDate = args.uploadDate;
+  if (args.durationISO) out.duration = args.durationISO;
+  return out;
+}
+
+/** Converte "32 min" / "1h 12min" / "45m 30s" → ISO 8601 duration (PT...).
+ *  Se non riesce, ritorna undefined (così omettiamo il campo). */
+export function parseDurationToIso(input?: string): string | undefined {
+  if (!input) return undefined;
+  const lower = input.toLowerCase();
+  const h = lower.match(/(\d+)\s*h/);
+  const m = lower.match(/(\d+)\s*m(?!s)/);
+  const s = lower.match(/(\d+)\s*s/);
+  if (!h && !m && !s) return undefined;
+  let out = 'PT';
+  if (h) out += `${h[1]}H`;
+  if (m) out += `${m[1]}M`;
+  if (s) out += `${s[1]}S`;
+  return out === 'PT' ? undefined : out;
+}
+
 /** Slug per OG image dato il pathname. */
 export function pathToOgSlug(pathname: string): string {
   const path = pathname.replace(/\/$/, '') || '/';

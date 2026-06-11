@@ -1,29 +1,102 @@
 ---
+/**
+ * Pagina-episodio archè · DEFINITIVA.
+ *
+ * Pubblicare un episodio = creare un .mdx con i campi dello schema.
+ * Tutto il resto si popola da solo:
+ *   • YouTube embed (lazy facade)              ← youtubeId
+ *   • Spotify embed (lazy)                      ← spotifyEpisodeUrl?
+ *   • Indice capitoli                           ← capitoli?
+ *   • Corpo MDX                                 ← contenuto del file
+ *   • 5 tappe del format come ancore            ← struttura archè
+ *   • Prev/Next + ritorno archivio              ← collection ordinata per numero
+ *   • SEO title/description/OG specifici         ← lib/seo
+ *   • JSON-LD VideoObject (Google video rich)   ← videoObjectSchema()
+ *
+ * Vincoli:
+ *  • prerender=true (SSG, niente serverless per le pagine pubbliche)
+ *  • TypeScript strict, niente fetch client per dati di base
+ *  • Estetica archè rigorosa: ink+bone+gold+patina, MAI ember (riservato
+ *    a momenti di "decodifica criminologica" futuri dentro il corpo MDX
+ *    se serviranno, non qui in chrome di pagina)
+ */
+
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Ornament from '../../components/Ornament.astro';
+import YouTubeEmbed from '../../components/episode/YouTubeEmbed.astro';
+import SpotifyEmbed from '../../components/episode/SpotifyEmbed.astro';
+import JsonLd from '../../components/seo/JsonLd.astro';
+import { videoObjectSchema, parseDurationToIso } from '../../lib/seo';
 
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const episodi = await getCollection('episodi', ({ data }) => data.pubblicato);
-  return episodi.map((entry) => ({
+  const tutti = (await getCollection('episodi', ({ data }) => data.pubblicato))
+    .sort((a, b) => a.data.numero - b.data.numero);
+  return tutti.map((entry, i) => ({
     params: { slug: entry.data.slug },
-    props: { entry },
+    props: {
+      entry,
+      prev: i > 0 ? tutti[i - 1] : null,
+      next: i < tutti.length - 1 ? tutti[i + 1] : null,
+    },
   }));
 }
 
 interface Props {
   entry: CollectionEntry<'episodi'>;
+  prev: CollectionEntry<'episodi'> | null;
+  next: CollectionEntry<'episodi'> | null;
 }
 
-const { entry } = Astro.props;
+const { entry, prev, next } = Astro.props;
 const { Content } = await render(entry);
 const ep = entry.data;
 const numeroPadded = String(ep.numero).padStart(2, '0');
 
+// Numerale romano per il numero episodio nell'header cinematografico.
+// I 5 archetipi del format coprono nello stato attuale episodi 1–5; al
+// crescere dell'archivio non c'è ragione di fermarsi: copre 1–99.
+function toRoman(n: number): string {
+  if (n <= 0) return String(n);
+  const map: Array<[number, string]> = [
+    [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'],
+    [5, 'V'], [4, 'IV'], [1, 'I'],
+  ];
+  let out = '';
+  let rest = n;
+  for (const [v, sym] of map) {
+    while (rest >= v) {
+      out += sym;
+      rest -= v;
+    }
+  }
+  return out;
+}
+const numeroRomano = toRoman(ep.numero);
+
+// SEO per l'episodio: title/description/OG specifici. L'OG image cade su
+// /og/episodi-{slug}.png — l'endpoint /og/[slug].png.ts attualmente serve
+// le pagine principali; episodi userà il fallback "home" della pipeline OG.
+// (Estensione futura, fuori scope di questo blocco.)
+const seoTitle = `Ep. ${numeroPadded} — ${ep.titolo}`;
+const seoDescription = ep.estratto;
+
+// VideoObject JSON-LD: nome, descrizione, thumbnail YouTube, embed, durata.
+const durationIso = parseDurationToIso(ep.durata);
+const uploadDate = ep.dataPubblicazione
+  ? ep.dataPubblicazione.toISOString().slice(0, 10)
+  : undefined;
+const videoSchema = videoObjectSchema({
+  name: `${seoTitle} · archè`,
+  description: ep.estratto,
+  youtubeId: ep.youtubeId,
+  uploadDate,
+  durationISO: durationIso,
+});
+
 // Le 5 tappe del format archè — struttura visibile/ancore.
-// Ogni episodio passa per queste cinque stazioni, sempre nello stesso ordine.
 const tappe = [
   {
     id: 'apertura-archeologica',
@@ -35,7 +108,7 @@ const tappe = [
     id: 'la-scena',
     n: 'II',
     titolo: 'La scena',
-    nota: 'Cosa accade in tragedia. La descrizione del gesto, prima di nominarlo con la lingua di oggi.',
+    nota: "Cosa accade in tragedia. La descrizione del gesto, prima di nominarlo con la lingua di oggi.",
   },
   {
     id: 'decodifica-criminologica',
@@ -56,15 +129,32 @@ const tappe = [
     nota: 'Cosa portare via. Una lente, non una sentenza.',
   },
 ];
+
+// Etichetta mito leggibile (capitalizzata) — la collection conserva slug minuscoli.
+const mitiNomi: Record<string, string> = {
+  medea: 'Medea',
+  elettra: 'Elettra',
+  aiace: 'Aiace',
+  eracle: 'Eracle',
+  troiane: 'Le Troiane',
+};
+const mitoLeggibile = mitiNomi[ep.mito] ?? ep.mito;
 ---
 
-<BaseLayout
-  title={`Ep. ${numeroPadded} — ${ep.titolo}`}
-  description={ep.estratto}
->
-  <article class="mx-auto max-w-text px-6 pt-20 pb-12 sm:pt-28">
-    <header class="text-center">
-      <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+<BaseLayout title={seoTitle} description={seoDescription}>
+  {/* JSON-LD VideoObject per Google video rich results — solo se c'è un
+      youtubeId valido (lo schema lo richiede comunque). */}
+  <JsonLd slot="head" data={videoSchema} />
+
+  <article class="bg-ink">
+    {/* ─── 1 · HEADER CINEMATOGRAFICO ─────────────────────────────── */}
+    <header class="relative mx-auto max-w-text px-6 pt-24 pb-12 text-center sm:pt-32">
+      {/* Numerale romano grande, segno editoriale. */}
+      <p class="font-secret text-6xl text-gold-deep sm:text-7xl md:text-8xl">
+        {numeroRomano}
+      </p>
+
+      <p class="mt-6 text-xs uppercase tracking-eyebrow text-gold-bright">
         Episodio {numeroPadded}
         {ep.durata && (
           <>
@@ -73,139 +163,194 @@ const tappe = [
           </>
         )}
       </p>
-      <h1 class="mt-6 font-display text-4xl leading-tight text-bone sm:text-5xl md:text-6xl">
+
+      <h1
+        class="mt-8 font-display text-4xl leading-tight text-bone sm:text-5xl md:text-6xl"
+      >
         {ep.titolo}
       </h1>
-      <p class="mt-8 font-display text-lg italic text-bone-dim sm:text-xl">
-        <span class="text-bone">{ep.mito}</span>
+
+      <Ornament class="my-10" />
+
+      <p class="font-display text-lg italic text-bone-dim sm:text-xl">
+        <span class="text-bone">{mitoLeggibile}</span>
         <span class="text-bone-faint"> — </span>
         {ep.fenomeno}
       </p>
-      <p class="mt-3 text-xs uppercase tracking-eyebrow text-bone-faint">
+      <p class="mt-4 text-xs uppercase tracking-eyebrow text-bone-faint">
         fonte · {ep.fonte}
       </p>
     </header>
 
-    <Ornament class="mt-12" />
-  </article>
+    {/* ─── 2 · YOUTUBE (il protagonista) ──────────────────────────── */}
+    <section class="mx-auto max-w-wide px-6 py-12 sm:py-16">
+      <YouTubeEmbed
+        youtubeId={ep.youtubeId}
+        titolo={ep.titolo}
+        durata={ep.durata}
+      />
+    </section>
 
-  <section class="mx-auto max-w-wide px-6 py-12 sm:py-16">
-    <div class="mx-auto max-w-4xl">
-      {/* TODO(blocco-mux): se ep.muxPlaybackId è presente, montare
-         <mux-player> qui (web component) con playback-id e metadata.
-         Per ora: solo riquadro estetico 16:9 con triangolo play. */}
-      <div
-        class="relative aspect-video overflow-hidden border border-[var(--line)] bg-ink-2"
-        aria-label={`Player video — episodio ${numeroPadded} — ${ep.titolo}`}
-      >
-        <div class="absolute inset-0 flex items-center justify-center">
-          <div class="flex flex-col items-center gap-6 text-center">
-            <span
-              class="font-display text-5xl text-gold-bright sm:text-6xl"
-              aria-hidden="true"
-            >
-              ▷
-            </span>
-            <p class="text-xs uppercase tracking-eyebrow text-bone-dim">
-              {ep.muxPlaybackId ? 'video pronto · player in arrivo' : 'video in lavorazione'}
+    {/* ─── 3 · SPOTIFY (se presente) ──────────────────────────────── */}
+    {
+      ep.spotifyEpisodeUrl && (
+        <section class="mx-auto max-w-wide px-6 pb-12 sm:pb-16">
+          <SpotifyEmbed
+            url={ep.spotifyEpisodeUrl}
+            label="Ascolta anche su Spotify"
+          />
+        </section>
+      )
+    }
+
+    {/* ─── 4 · INDICE CAPITOLI (se presenti) ─────────────────────── */}
+    {
+      ep.capitoli && ep.capitoli.length > 0 && (
+        <section class="mx-auto max-w-text px-6 py-12 sm:py-16">
+          <header>
+            <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+              Capitoli
+            </p>
+            <h2 class="mt-3 font-display text-2xl leading-tight text-bone sm:text-3xl">
+              Indice dell'episodio
+            </h2>
+          </header>
+          <ol class="mt-8 space-y-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)]">
+            {ep.capitoli.map((cap, i) => (
+              <li class="flex items-baseline justify-between gap-6 bg-ink-2 px-6 py-4 sm:px-8 sm:py-5">
+                <div class="flex items-baseline gap-4">
+                  <span class="font-display text-sm text-gold-bright sm:text-base">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span class="font-serif text-base text-bone">{cap.titolo}</span>
+                </div>
+                <span class="shrink-0 font-display text-xs tracking-base text-bone-faint sm:text-sm">
+                  {cap.timestamp}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    {/* ─── 5 · CORPO MDX (il testo editoriale) ───────────────────── */}
+    <section
+      class="prose-arche mx-auto max-w-text px-6 py-16 font-serif text-lg leading-loose text-bone-dim sm:py-20"
+    >
+      <Content />
+    </section>
+
+    <Ornament class="my-8" />
+
+    {/* ─── 6 · LE 5 TAPPE (struttura visibile del metodo) ─────────── */}
+    <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
+      <header class="mx-auto max-w-text text-center">
+        <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
+          Il format archè
+        </p>
+        <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
+          Le cinque tappe
+        </h2>
+        <p class="mt-6 font-serif leading-loose text-bone-dim">
+          Ogni episodio attraversa cinque stazioni, nello stesso ordine. Non è
+          una scaletta: è il metodo, reso visibile.
+        </p>
+      </header>
+
+      <ol class="mt-16 grid grid-cols-1 gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] md:grid-cols-2 lg:grid-cols-5">
+        {
+          tappe.map((tappa) => (
+            <li class="bg-ink-2 p-6 sm:p-8">
+              <a
+                href={`#${tappa.id}`}
+                class="block transition-colors hover:text-gold-bright"
+              >
+                <span class="font-display text-3xl text-gold-bright">
+                  {tappa.n}
+                </span>
+                <h3 class="mt-4 font-display text-lg leading-tight text-bone">
+                  {tappa.titolo}
+                </h3>
+                <p class="mt-3 text-sm leading-loose text-bone-dim">
+                  {tappa.nota}
+                </p>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <Ornament class="my-12" />
+
+    {/* ─── 7 · NAVIGAZIONE prev/next + archivio ──────────────────── */}
+    <nav
+      class="mx-auto max-w-wide px-6 pb-24"
+      aria-label="Navigazione fra gli episodi"
+    >
+      <div class="grid grid-cols-1 gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] md:grid-cols-3">
+        {/* Prev */}
+        {prev ? (
+          <a
+            href={`/episodi/${prev.data.slug}`}
+            class="group block bg-ink-2 p-6 transition-colors hover:bg-ink-3 sm:p-8"
+          >
+            <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+              ← Episodio precedente
+            </p>
+            <p class="mt-3 font-display text-lg leading-tight text-bone transition-colors group-hover:text-gold-bright sm:text-xl">
+              {prev.data.titolo}
+            </p>
+          </a>
+        ) : (
+          <div class="bg-ink-2 p-6 sm:p-8">
+            <p class="text-xs uppercase tracking-eyebrow text-bone-faint">
+              ← Episodio precedente
+            </p>
+            <p class="mt-3 font-display text-base italic text-bone-faint">
+              Questo è il primo.
             </p>
           </div>
-        </div>
-        <div class="pointer-events-none absolute inset-0 ring-1 ring-inset ring-[var(--line)]"></div>
-      </div>
-    </div>
-  </section>
+        )}
 
-  {
-    ep.capitoli && ep.capitoli.length > 0 && (
-      <section class="mx-auto max-w-text px-6 py-12">
-        <header>
+        {/* Archivio (centrale) */}
+        <a
+          href="/episodi"
+          class="group block bg-ink-2 p-6 text-center transition-colors hover:bg-ink-3 sm:p-8"
+        >
           <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
-            Capitoli
+            L'archivio
           </p>
-          <h2 class="mt-3 font-display text-2xl leading-tight text-bone sm:text-3xl">
-            Indice dell'episodio
-          </h2>
-        </header>
-        <ol class="mt-8 space-y-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)]">
-          {ep.capitoli.map((cap, i) => (
-            <li class="flex items-baseline justify-between gap-6 bg-ink-2 px-6 py-4 sm:px-8 sm:py-5">
-              <div class="flex items-baseline gap-4">
-                <span class="font-display text-sm text-gold-bright sm:text-base">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span class="font-serif text-base text-bone">{cap.titolo}</span>
-              </div>
-              <span class="shrink-0 font-display text-xs tracking-base text-bone-faint sm:text-sm">
-                {cap.timestamp}
-              </span>
-            </li>
-          ))}
-        </ol>
-      </section>
-    )
-  }
+          <p class="mt-3 font-display text-lg italic leading-tight text-bone transition-colors group-hover:text-gold-bright sm:text-xl">
+            Tutti gli episodi
+          </p>
+        </a>
 
-  <section
-    class="prose-arche mx-auto max-w-text px-6 py-16 font-serif text-lg leading-loose text-bone-dim sm:py-20"
-  >
-    <Content />
-  </section>
-
-  <Ornament class="my-8" />
-
-  <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
-    <header class="mx-auto max-w-text text-center">
-      <p class="mb-6 text-xs uppercase tracking-eyebrow text-gold-bright">
-        Il format archè
-      </p>
-      <h2 class="font-display text-3xl leading-tight text-bone sm:text-4xl">
-        Le cinque tappe
-      </h2>
-      <p class="mt-6 font-serif leading-loose text-bone-dim">
-        Ogni episodio attraversa cinque stazioni, nello stesso ordine. Non è una
-        scaletta: è il metodo, reso visibile.
-      </p>
-    </header>
-
-    <ol class="mt-16 grid grid-cols-1 gap-px overflow-hidden border border-[var(--line-soft)] bg-[var(--line-soft)] md:grid-cols-2 lg:grid-cols-5">
-      {
-        tappe.map((tappa) => (
-          <li class="bg-ink-2 p-6 sm:p-8">
-            <a
-              href={`#${tappa.id}`}
-              class="block transition-colors hover:text-gold-bright"
-            >
-              <span class="font-display text-3xl text-gold-bright">
-                {tappa.n}
-              </span>
-              <h3 class="mt-4 font-display text-lg leading-tight text-bone">
-                {tappa.titolo}
-              </h3>
-              <p class="mt-3 text-sm leading-loose text-bone-dim">
-                {tappa.nota}
-              </p>
-            </a>
-          </li>
-        ))
-      }
-    </ol>
-  </section>
-
-  <Ornament class="my-12" />
-
-  <section class="mx-auto max-w-text px-6 pb-24 text-center">
-    <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
-      Continua l'archivio
-    </p>
-    <p class="mt-4 font-display text-lg italic text-bone-dim">
-      Torna a tutti gli episodi
-    </p>
-    <a
-      href="/episodi"
-      class="mt-8 inline-block border border-[var(--line)] px-6 py-3 text-xs uppercase tracking-eyebrow text-bone transition-colors hover:border-gold-bright hover:text-gold-bright"
-    >
-      ← L'archivio
-    </a>
-  </section>
+        {/* Next */}
+        {next ? (
+          <a
+            href={`/episodi/${next.data.slug}`}
+            class="group block bg-ink-2 p-6 text-right transition-colors hover:bg-ink-3 sm:p-8"
+          >
+            <p class="text-xs uppercase tracking-eyebrow text-gold-bright">
+              Episodio successivo →
+            </p>
+            <p class="mt-3 font-display text-lg leading-tight text-bone transition-colors group-hover:text-gold-bright sm:text-xl">
+              {next.data.titolo}
+            </p>
+          </a>
+        ) : (
+          <div class="bg-ink-2 p-6 text-right sm:p-8">
+            <p class="text-xs uppercase tracking-eyebrow text-bone-faint">
+              Episodio successivo →
+            </p>
+            <p class="mt-3 font-display text-base italic text-bone-faint">
+              In arrivo.
+            </p>
+          </div>
+        )}
+      </div>
+    </nav>
+  </article>
 </BaseLayout>

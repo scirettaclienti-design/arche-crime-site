@@ -1,0 +1,246 @@
+---
+/**
+ * YouTubeEmbed — facade lazy archè.
+ *
+ * Pattern: niente iframe finché l'utente non clicca play.
+ *  • Primo render: solo poster (i.ytimg.com/vi/{id}/maxresdefault.jpg)
+ *    + bottone play oro archè. Zero JS YouTube, zero richieste al
+ *    dominio googlevideo.com → first load leggero, niente CLS.
+ *  • Click sul bottone (o tastiera Enter/Space): JS minimo sostituisce
+ *    il facade con un <iframe youtube-nocookie> autoplay=1.
+ *  • Privacy: youtube-nocookie.com — niente cookie pubblicitari finché
+ *    il video non parte effettivamente.
+ *
+ * Accessibilità:
+ *  • <button type="button"> nativo, focus-visible via global.css
+ *  • aria-label esplicito + sr-only "Riproduci"
+ *  • prefers-reduced-motion: niente animazione del rombo
+ *
+ * Estetica archè:
+ *  • Cornice sottile gold-deep, ring interno gold per profondità
+ *  • Rombo gold-bright (◆) + triangolo come "play" — coerente con
+ *    l'Ornament. Niente logo YouTube, niente UI generico.
+ *  • Tinta cinematografica: il poster passa sotto un veil ink al 35%,
+ *    al hover si schiarisce, sotto-pin gold-deep si accende.
+ */
+
+interface Props {
+  /** ID YouTube del video (11 caratteri, es. "dQw4w9WgXcQ"). */
+  youtubeId: string;
+  /** Titolo dell'episodio — usato per aria-label e fallback alt poster. */
+  titolo: string;
+  /** Durata opzionale, mostrata come metadata sotto il poster. */
+  durata?: string;
+  /** Override del poster (se la maxresdefault non c'è). */
+  posterOverride?: string;
+  /** Inizio del video in secondi (opzionale). */
+  startAt?: number;
+  class?: string;
+}
+
+const {
+  youtubeId,
+  titolo,
+  durata,
+  posterOverride,
+  startAt,
+  class: className = '',
+} = Astro.props;
+
+const poster =
+  posterOverride ?? `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`;
+const posterFallback = `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
+const ariaLabel = `Riproduci il video dell'episodio — ${titolo}`;
+const startParam = startAt && startAt > 0 ? `&start=${Math.floor(startAt)}` : '';
+---
+
+<figure
+  class:list={[
+    'arche-yt mx-auto w-full max-w-4xl',
+    className,
+  ]}
+  data-arche-yt
+  data-youtube-id={youtubeId}
+  data-start-param={startParam}
+>
+  <div
+    class="arche-yt-frame relative aspect-video overflow-hidden border border-gold-deep bg-ink-2"
+  >
+    {/* Poster (preconnect a i.ytimg.com avviene via head, ma il poster
+        stesso è il request critico — eager su questa pagina). */}
+    <img
+      src={poster}
+      alt={`Locandina episodio: ${titolo}`}
+      class="arche-yt-poster absolute inset-0 h-full w-full object-cover"
+      loading="lazy"
+      decoding="async"
+      width="1280"
+      height="720"
+      data-poster-fallback={posterFallback}
+    />
+
+    {/* Veil cinematografico ink → leggera vignettatura. Sotto al hover si schiarisce. */}
+    <div
+      aria-hidden="true"
+      class="arche-yt-veil pointer-events-none absolute inset-0"
+      style="background: radial-gradient(ellipse at center, rgba(20,17,12,0.35) 0%, rgba(20,17,12,0.62) 100%); transition: background var(--dur-medium) var(--ease-out-quart);"
+    >
+    </div>
+
+    {/* Ring interno gold, segno archè. */}
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-0 ring-1 ring-inset ring-[var(--line)]"
+    >
+    </div>
+
+    {/* Bottone play — rombo oro + triangolo inscritto. */}
+    <button
+      type="button"
+      class="arche-yt-play absolute inset-0 z-10 flex items-center justify-center text-bone transition-colors focus:outline-none"
+      aria-label={ariaLabel}
+    >
+      <span class="sr-only">Riproduci</span>
+      <span
+        aria-hidden="true"
+        class="arche-yt-knot relative flex h-20 w-20 items-center justify-center sm:h-24 sm:w-24"
+      >
+        {/* Rombo gold (Ornament) */}
+        <svg
+          viewBox="0 0 100 100"
+          class="absolute inset-0 h-full w-full"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M50 6 L94 50 L50 94 L6 50 Z"
+            fill="none"
+            stroke="var(--color-gold)"
+            stroke-width="1.5"
+            class="arche-yt-diamond"
+          ></path>
+          <path
+            d="M50 14 L86 50 L50 86 L14 50 Z"
+            fill="rgba(200,162,78,0.08)"
+            stroke="var(--color-gold-bright)"
+            stroke-width="0.8"
+          ></path>
+        </svg>
+        {/* Triangolo play, inscritto */}
+        <svg
+          viewBox="0 0 100 100"
+          class="relative h-9 w-9 sm:h-11 sm:w-11"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M38 28 L74 50 L38 72 Z"
+            fill="var(--color-gold-bright)"
+          ></path>
+        </svg>
+      </span>
+    </button>
+  </div>
+
+  <figcaption
+    class="mt-4 flex items-center justify-between gap-4 text-xs uppercase tracking-eyebrow text-bone-faint"
+  >
+    <span class="text-gold-bright">Episodio · video</span>
+    {durata && <span>{durata}</span>}
+  </figcaption>
+</figure>
+
+<style>
+  /* Hover / focus: il veil si schiarisce, il rombo "respira" leggermente.
+     Reduced-motion: niente trasformazioni. */
+  .arche-yt-play:hover ~ * .arche-yt-veil,
+  .arche-yt-frame:hover .arche-yt-veil,
+  .arche-yt-play:focus-visible ~ * .arche-yt-veil {
+    background: radial-gradient(
+      ellipse at center,
+      rgba(20, 17, 12, 0.18) 0%,
+      rgba(20, 17, 12, 0.45) 100%
+    ) !important;
+  }
+  .arche-yt-frame:hover .arche-yt-knot,
+  .arche-yt-play:focus-visible .arche-yt-knot {
+    transform: scale(1.04);
+  }
+  .arche-yt-knot {
+    transition: transform var(--dur-medium) var(--ease-out-quart);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arche-yt-frame:hover .arche-yt-knot,
+    .arche-yt-play:focus-visible .arche-yt-knot {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  // Poster fallback: se la maxresdefault YouTube 404, scendiamo a hqdefault.
+  // (Alcuni video non hanno maxres caricata.) Listener delegato global, one-shot.
+  document.addEventListener(
+    'error',
+    (ev: Event) => {
+      const img = ev.target as HTMLImageElement | null;
+      if (!img || !img.classList?.contains('arche-yt-poster')) return;
+      const fb = img.dataset?.posterFallback;
+      if (!fb || img.src === fb) return;
+      img.src = fb;
+    },
+    true,
+  );
+
+  // Facade → iframe swap.
+  // Niente librerie esterne. Selettore globale al document; ogni embed
+  // ha il proprio id univoco data-youtube-id, lo script funziona per N
+  // embed sulla stessa pagina senza conflitti.
+  type Facade = HTMLElement & { dataset: { youtubeId: string; startParam: string } };
+
+  function activate(root: Facade): void {
+    const id = root.dataset.youtubeId;
+    if (!id) return;
+    const start = root.dataset.startParam ?? '';
+    const frame = root.querySelector<HTMLElement>('.arche-yt-frame');
+    if (!frame) return;
+
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1${start}`;
+    iframe.title = root.getAttribute('aria-label') ?? 'YouTube video';
+    iframe.setAttribute(
+      'allow',
+      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
+    );
+    iframe.setAttribute('allowfullscreen', 'true');
+    iframe.style.cssText =
+      'position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--color-ink-2);';
+
+    // Rimpiazza i figli del frame mantenendo cornice/ring esterni.
+    // Manteniamo il ring `.ring-1` per coerenza estetica anche col video acceso.
+    const ring = frame.querySelector('.ring-1');
+    frame.innerHTML = '';
+    frame.appendChild(iframe);
+    if (ring) frame.appendChild(ring);
+  }
+
+  document.addEventListener('click', (e: Event) => {
+    const t = e.target as HTMLElement | null;
+    if (!t) return;
+    const btn = t.closest<HTMLElement>('.arche-yt-play');
+    if (!btn) return;
+    const root = btn.closest<HTMLElement>('[data-arche-yt]') as Facade | null;
+    if (!root) return;
+    e.preventDefault();
+    activate(root);
+  });
+
+  // Keyboard: Enter / Space sul focus del button.
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const t = document.activeElement as HTMLElement | null;
+    if (!t || !t.classList.contains('arche-yt-play')) return;
+    const root = t.closest<HTMLElement>('[data-arche-yt]') as Facade | null;
+    if (!root) return;
+    e.preventDefault();
+    activate(root);
+  });
+</script>

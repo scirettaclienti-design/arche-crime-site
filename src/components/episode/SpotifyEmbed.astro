@@ -1,0 +1,146 @@
+---
+/**
+ * SpotifyEmbed — embed Spotify lazy in registro archè.
+ *
+ * Accetta sia URL "open" (https://open.spotify.com/episode/{id}) sia URL
+ * "embed" già pronto. Normalizza in /embed/episode|show|track/{id}.
+ *
+ * Performance: iframe non viene inserito al primo render. Un placeholder
+ * statico in ink-2 + cornice gold-deep tiene l'aspect-ratio (no CLS).
+ * IntersectionObserver inietta l'iframe Spotify quando il box è prossimo
+ * al viewport (rootMargin 200px). Reduced-data / utenti senza JS vedono
+ * comunque il fallback con link "Apri su Spotify".
+ *
+ * Tema Spotify: ?theme=0 (dark) — coerente con ink archè.
+ */
+
+interface Props {
+  /** URL Spotify dell'episodio (open.spotify.com/episode/{id} oppure embed già pronto). */
+  url: string;
+  /** Etichetta breve sopra il player ("Ascolta anche su Spotify" di default). */
+  label?: string;
+  class?: string;
+}
+
+const { url, label = 'Ascolta anche su Spotify', class: className = '' } = Astro.props;
+
+/** Converte un URL open.spotify.com in /embed/...?theme=0 robustamente.
+ *  Se è già un embed, lo restituisce praticamente intatto (forza theme=0). */
+function toEmbedUrl(input: string): string {
+  try {
+    const u = new URL(input);
+    if (!u.hostname.includes('spotify.com')) return input;
+    // Sostituisce open. → open. + path /embed/ se non c'è già
+    if (!u.pathname.startsWith('/embed/')) {
+      u.pathname = `/embed${u.pathname}`;
+    }
+    u.searchParams.set('utm_source', 'generator');
+    u.searchParams.set('theme', '0');
+    return u.toString();
+  } catch {
+    return input;
+  }
+}
+
+const embedUrl = toEmbedUrl(url);
+// Spotify episode/show embeds: altezza standard 152 (compact) o 232 (largo).
+// Usiamo 232 per dare respiro al titolo dell'episodio.
+const embedHeight = 232;
+---
+
+<section class:list={['mx-auto w-full max-w-4xl', className]}>
+  <header class="mb-4 flex items-center justify-between gap-4">
+    <p class="text-xs uppercase tracking-eyebrow text-gold-bright">{label}</p>
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="text-xs uppercase tracking-eyebrow text-bone-faint transition-colors hover:text-gold-bright"
+    >
+      Apri su Spotify ↗
+    </a>
+  </header>
+
+  <div
+    class="arche-spotify relative overflow-hidden border border-gold-deep bg-ink-2"
+    data-arche-spotify
+    data-embed-url={embedUrl}
+    style={`min-height: ${embedHeight}px;`}
+  >
+    {/* Placeholder statico (visibile finché l'iframe non viene iniettato).
+        SSR-safe, no CLS: il container ha già min-height = embedHeight. */}
+    <div
+      class="arche-spotify-placeholder absolute inset-0 flex items-center justify-center px-6 text-center"
+      aria-hidden="true"
+    >
+      <p class="font-display italic text-bone-dim">
+        <span class="text-gold-bright">♪</span>
+        <span class="ml-2">in caricamento…</span>
+      </p>
+    </div>
+
+    {/* Ring interno gold, segno archè. */}
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-0 ring-1 ring-inset ring-[var(--line)]"
+    >
+    </div>
+
+    {/* Fallback noscript: link diretto. */}
+    <noscript>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="absolute inset-0 flex items-center justify-center p-6 text-center"
+      >
+        <span class="font-display text-bone">Apri l'episodio su Spotify ↗</span>
+      </a>
+    </noscript>
+  </div>
+</section>
+
+<script>
+  // Lazy mount: IntersectionObserver inserisce l'iframe quando il box è
+  // prossimo al viewport. Una sola volta per elemento.
+  function mount(host: HTMLElement): void {
+    if (host.dataset.mounted === '1') return;
+    const url = host.dataset.embedUrl;
+    if (!url) return;
+    host.dataset.mounted = '1';
+    const iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.title = 'Spotify · episodio archè';
+    iframe.loading = 'lazy';
+    iframe.setAttribute(
+      'allow',
+      'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture',
+    );
+    iframe.style.cssText =
+      'position:relative;display:block;width:100%;height:232px;border:0;background:transparent;';
+    // Rimuove placeholder (resta il ring oro)
+    const ph = host.querySelector('.arche-spotify-placeholder');
+    if (ph) ph.remove();
+    host.appendChild(iframe);
+  }
+
+  const hosts = document.querySelectorAll<HTMLElement>('[data-arche-spotify]');
+  if (hosts.length) {
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              mount(e.target as HTMLElement);
+              io.unobserve(e.target);
+            }
+          });
+        },
+        { rootMargin: '200px 0px' },
+      );
+      hosts.forEach((h) => io.observe(h));
+    } else {
+      hosts.forEach(mount);
+    }
+  }
+</script>

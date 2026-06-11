@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EpisodeCard from '../components/EpisodeCard.astro';
 import Ornament from '../components/Ornament.astro';
@@ -8,6 +9,19 @@ import RevealText from '../components/motion/RevealText.astro';
 import CurtainOpening from '../components/motion/CurtainOpening.astro';
 
 export const prerender = true;
+
+// "Ultimo episodio" — pesca dinamicamente l'episodio pubblicato più
+// recente. Criterio di ordine:
+//   1. dataPubblicazione (desc) se presente,
+//   2. fallback: numero più alto.
+// Quando non c'è ancora nessun episodio pubblicato → stato "in arrivo".
+const episodiPubblicati = await getCollection('episodi', ({ data }) => data.pubblicato);
+const ultimoEpisodio = episodiPubblicati.sort((a, b) => {
+  const da = a.data.dataPubblicazione?.getTime() ?? 0;
+  const db = b.data.dataPubblicazione?.getTime() ?? 0;
+  if (db !== da) return db - da;
+  return b.data.numero - a.data.numero;
+})[0] ?? null;
 
 const porte = [
   {
@@ -143,28 +157,51 @@ const porte = [
   </section>
 
   <section class="mx-auto max-w-wide px-6 py-16 sm:py-20">
-    <RevealText variant="fade" class="mx-auto max-w-text text-center">
-      <p class="mb-4 text-xs uppercase tracking-eyebrow text-gold-bright">
-        Ultimo episodio
-      </p>
-      <h2 class="font-display text-2xl leading-tight text-bone sm:text-3xl">
-        In apertura: Medea
-      </h2>
-    </RevealText>
+    {
+      ultimoEpisodio ? (
+        <>
+          <RevealText variant="fade" class="mx-auto max-w-text text-center">
+            <p class="mb-4 text-xs uppercase tracking-eyebrow text-gold-bright">
+              Ultimo episodio
+            </p>
+            <h2 class="font-display text-2xl leading-tight text-bone sm:text-3xl">
+              In apertura
+            </h2>
+          </RevealText>
 
-    <RevealText variant="fade" delay={0.15} class="mx-auto mt-12 block max-w-3xl">
-      <EpisodeCard
-        variant="feature"
-        numero={1}
-        slug="medea"
-        titolo="Medea, o del figlicidio"
-        mito="Medea"
-        fenomeno="il figlicidio come atto di annientamento dell'altro"
-        fonte="Euripide"
-        durata="32 min"
-        estratto="Prima di essere cronaca, è tragedia. Prima di essere diagnosi, è scena. Apriamo il sipario su una donna che il mito ha già condannato: e proviamo a leggere ciò che la cronaca, da sola, non riuscirebbe mai a spiegare."
-      />
-    </RevealText>
+          <RevealText variant="fade" delay={0.15} class="mx-auto mt-12 block max-w-3xl">
+            <EpisodeCard
+              variant="feature"
+              numero={ultimoEpisodio.data.numero}
+              slug={ultimoEpisodio.data.slug}
+              titolo={ultimoEpisodio.data.titolo}
+              mito={ultimoEpisodio.data.mito}
+              fenomeno={ultimoEpisodio.data.fenomeno}
+              fonte={ultimoEpisodio.data.fonte}
+              durata={ultimoEpisodio.data.durata}
+              estratto={ultimoEpisodio.data.estratto}
+            />
+          </RevealText>
+        </>
+      ) : (
+        <RevealText variant="fade" class="mx-auto max-w-text text-center">
+          <p class="mb-4 text-xs uppercase tracking-eyebrow text-gold-bright">
+            archivio in apertura
+          </p>
+          <h2 class="font-display text-2xl italic leading-tight text-bone sm:text-3xl">
+            Il primo episodio sta arrivando.
+          </h2>
+          <p class="mx-auto mt-8 max-w-text font-serif text-base leading-loose text-bone-dim">
+            archè si apre con Medea. Lavoriamo lentamente — torna fra poco, oppure
+            entra da
+            <a class="text-gold-bright hover:text-bone" href="/metodo">
+              Il metodo
+            </a>
+            mentre aspetti.
+          </p>
+        </RevealText>
+      )
+    }
   </section>
 
   <GreekMeander modules={6} scrub={0.6} class="my-16 px-6 opacity-80" />
